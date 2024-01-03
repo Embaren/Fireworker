@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- FIREWORKER v.0.3 -->
+<!-- FIREWORKER v.0.3.5 -->
 <!-- Emile BARBIER--RENARD - 2024 -->
 <!-- Contact : ebarbier@telecom-paris.fr -->
 <html lang="en">
@@ -40,7 +40,7 @@
 <body>
 
 	<div id="gameDiv">
-        <h1>FIREWORKER v0.3</h1>
+        <h1>FIREWORKER v0.3.5</h1>
         <canvas id="game" width="256" height="256"></canvas>
         <p>Click on the board to create beautiful fireworks!</h1>
 	</div>
@@ -132,7 +132,7 @@
         }
         
         class Firework {
-          constructor(ctx, pos, base_color, smoke_color, duration = 5., bit_lifespan = 1., density = 1., base_speed = 1., gravity = .1, colors=[], cascade=null, trail=null) {
+          constructor(ctx, pos, base_color, smoke_color, duration = 5., bit_lifespan = 1., density = 1., projection_speed = 1., initial_velocity=null, gravity = .1, colors=[], cascade=null, trail=null) {
             this.ctx = ctx;
             this.pos = pos;
             this.bits = [];
@@ -140,8 +140,9 @@
             this.smoke_color = smoke_color;
             this.duration = duration;
             this.bit_lifespan = bit_lifespan;
+            this.initial_velocity = initial_velocity === null ? new Point(0,0) : initial_velocity;
             this.density = density;
-            this.base_speed = base_speed;
+            this.projection_speed = projection_speed;
             this.progress = 0.;
             this.radius = 0.;
             this.nbBits = Math.round(density * 7);
@@ -153,10 +154,10 @@
             const phase = Math.random() * 2 * Math.PI;
             for(let j = 0 ; j < this.nbBits ; j ++){
               const angle = (j+(Math.random()-.5)/2.) * 2 * Math.PI / this.nbBits + phase;
-              const speed = base_speed+(Math.random()-.5);
-              const vel = new Point(speed * Math.cos(angle),speed * Math.sin(angle))
+              const speed = projection_speed+(Math.random()-.5);
+              const vel = this.initial_velocity.add(new Point(speed * Math.cos(angle),speed * Math.sin(angle)));
               const bit = new Bit(pos,vel,base_color,1.,0.,BitType.main,true);
-              this.bits.push(bit)
+              this.bits.push(bit);
             }
           }
           update() {
@@ -182,7 +183,7 @@
                       //bit.radius = bit.radius*(1.2**bit_progress);
                       
                       if((this.cascade !== null) && this.bits[j].status){
-                        newFireworks.push(new Firework(this.ctx,this.bits[j].pos,this.cascade.color,this.cascade.smoke_color,duration=this.cascade.duration*(1+(Math.random()-.5)/10.),bit_lifespan=this.cascade.bit_lifespan,density=this.cascade.density,base_speed=this.cascade.base_speed,this.gravity=this.cascade.gravity,colors=this.cascade.colors,cascade=this.cascade.cascade,trail=this.cascade.trail));
+                        newFireworks.push(new Firework(this.ctx,this.bits[j].pos,this.cascade.color,this.cascade.smoke_color,duration=this.cascade.duration*(1+(Math.random()-.5)/10.),bit_lifespan=this.cascade.bit_lifespan,density=this.cascade.density,projection_speed=this.cascade.projection_speed, initial_velocity=this.bits[j].vel,this.gravity=this.cascade.gravity,colors=this.cascade.colors,cascade=this.cascade.cascade,trail=this.cascade.trail));
                       }
                     }
                     if(this.progress <= this.duration + this.bit_lifespan){
@@ -281,15 +282,15 @@
             trail_sparkling = new Trail(white, 1., 2./framerate, dispersion = 10., amount = 1, begin = 0.);
             trail0 = new Trail(new Color(color.r,color.g,color.b,.5).scale(1./color.norm()), 1.5, .75, dispersion = 5., amount = 3, begin = 1/framerate);
             
-            cascade2 = new Firework(ctx, new Point(0,0),color3.scale(1./color3.norm()), new Color(.2,.2,.2,.2), duration = 1. + (Math.random()-.5)*.5, bit_lifespan=1., density=.2+Math.random()/1.5, base_speed = .75, gravity = gravity, colors=[])
+            cascade2 = new Firework(ctx, new Point(0,0),color3.scale(1./color3.norm()), new Color(.2,.2,.2,.2), duration = 1. + (Math.random()-.5)*.5, bit_lifespan=1., density=.2+Math.random()/1.5, projection_speed = .75, initial_velocity = null, gravity = gravity, colors=[])
             
-            cascade1 = new Firework(ctx, new Point(0,0),color2.scale(1./color2.norm()), new Color(.2,.2,.2,.2), duration = 1.5 + (Math.random()-.5)*1., bit_lifespan=1., density=.3+Math.random(), base_speed = 2., gravity = gravity, colors=[], cascade = cascade2, trail=null);
+            cascade1 = new Firework(ctx, new Point(0,0),color2.scale(1./color2.norm()), new Color(.2,.2,.2,.2), duration = 1.5 + (Math.random()-.5)*1., bit_lifespan=1., density=.3+Math.random(), projection_speed = 2., initial_velocity = null, gravity = gravity, colors=[], cascade = cascade2, trail=null);
             
-            cascade_sparkling = new Firework(ctx, new Point(0,0),new Color(0.,0.,0.,0.), new Color(.2,.2,.2,.1), duration = 2. + (Math.random()-.5)*1.2, bit_lifespan=1., density=.1+Math.random()/2., base_speed = .1, gravity = gravity, colors=[], cascade = null, trail=trail_sparkling);
+            cascade_sparkling = new Firework(ctx, new Point(0,0),new Color(0.,0.,0.,0.), new Color(.2,.2,.2,.1), duration = 2. + (Math.random()-.5)*1.2, bit_lifespan=1., density=.1+Math.random()/2., projection_speed = .1, initial_velocity = null, gravity = gravity, colors=[], cascade = null, trail=trail_sparkling);
             
             const selector = Math.random();
             
-            fireworks.push(new Firework(ctx, new Point(x,y),selector < .75 ? color.scale(1./color.norm()) : new Color(1.,1.,1.,.5) , new Color(.2,.2,.2,.2), duration = selector < .75 ? 3. + (Math.random()-.5)*2. : 1. + (Math.random()-.5)*1., bit_lifespan=1., selector < .75 ? density=1.+Math.random()*2. : density=1.5+Math.random()*2., base_speed = 5., gravity = gravity,  colors=[], cascade = selector < .75 ? cascade1 : cascade_sparkling, trail = selector < .75 ? trail0 : null));
+            fireworks.push(new Firework(ctx, new Point(x,y),selector < .75 ? color.scale(1./color.norm()) : new Color(1.,1.,1.,.5) , new Color(.2,.2,.2,.2), duration = selector < .75 ? 3. + (Math.random()-.5)*2. : 1. + (Math.random()-.5)*1., bit_lifespan=1., selector < .75 ? density=1.+Math.random()*2. : density=1.5+Math.random()*2., projection_speed = 5., initial_velocity = null, gravity = gravity,  colors=[], cascade = selector < .75 ? cascade1 : cascade_sparkling, trail = selector < .75 ? trail0 : null));
 
         }
         
