@@ -474,11 +474,11 @@
                 const gold_dust = new Color(.9,.7,.2,0.05);
                 
                 //                       color, radius, lifespan, dispersion, amount,       delay
-                trail0 = new Trail(gold_trans2,    1.5,      .75,         5.,      3, 1/framerate);
+                trail0 = new Trail(gold_trans2,    1.5,      .75,         10.,      3, 1/framerate);
                 const time_to_reach = Math.random()+1.5;
 
                 firework = new Firework(environment.ctx, zeroPoint, gold_trans, gold_dust, duration = time_to_reach * (1.2+(Math.random()-.5)*.2), nb_bits = 4, bit_lifespan=.75, projection_speed = 6., initial_velocity = null, gravity, dampen, cascade = null, trail = trail0, type = FireworkType.circle);
-                return new Emitter(environment.ctx, origin, firework, name="Gold fountain", initial_velocity=origin.scale(-1).add(pos).scale(1.5/(time_to_reach)), delay=0., duration=1.8+Math.random()/3);
+                return new Emitter(environment.ctx, origin, firework, name="Gold fountain", initial_velocity=origin.scale(-1).add(pos).scale(2./(time_to_reach)), delay=0., duration=1.8+Math.random()/3);
                 
             }
             
