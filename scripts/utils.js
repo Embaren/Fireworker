@@ -1,97 +1,149 @@
-const formula_tags = {
-    "RANDOM" : {
-        "inputs": 0,
-        "fun": ()=>{return Math.random();}
-    },
+export const formula_tags = {
     "PI" : {
         "inputs": 0,
-        "fun": ()=>{return Math.PI;}
+        "fun": ()=>{return [Math.PI];},
+        "description": "Constant π = 3.141592653589793..."
+    },
+    "RANDOM" : {
+        "inputs": 0,
+        "fun": ()=>{return [Math.random()];},
+        "description": "Random value sampled uniformly between 0 and 1."
+    },
+    "RANDN" : {
+        "inputs": 0,
+        "fun": ()=>{return [Math.sqrt(-2.*Math.log(1.-Math.random()))*Math.cos(2.*Math.PI*Math.random())];},
+        "description": "Random value sampled uniformly along a standard normal distribution."
     },
     "+" : {
         "inputs": 2,
-        "fun": (a,b)=>{return a+b;}
+        "fun": (a,b)=>{return [a+b];},
+        "description": "Addition operator."
     },
     "-" : {
         "inputs": 2,
-        "fun": (a,b)=>{return a-b;}
+        "fun": (a,b)=>{return [a-b];},
+        "description": "Substraction operator."
     },
     "*" : {
         "inputs": 2,
-        "fun": (a,b)=>{return a*b;}
+        "fun": (a,b)=>{return [a*b];},
+        "description": "Multiplication operator."
     },
     "/" : {
         "inputs": 2,
-        "fun": (a,b)=>{return a/b;}
+        "fun": (a,b)=>{return [a/b];},
+        "description": "Division operator."
     },
-    "COS" : {
-        "inputs": 1,
-        "fun": Math.cos
+    "^" : {
+        "inputs": 2,
+        "fun": (a,b)=>{return [Math.pow(a,b)]},
+        "description": "Power operator: A B ^ = Aᴮ."
     },
-    "SIN" : {
-        "inputs": 1,
-        "fun": Math.sin
-    },
-    "TAN" : {
-        "inputs": 1,
-        "fun": Math.tan
-    },
-    "ACOS" : {
-        "inputs": 1,
-        "fun": Math.acos
-    },
-    "ASIN" : {
-        "inputs": 1,
-        "fun": Math.asin
-    },
-    "ATAN" : {
-        "inputs": 1,
-        "fun": Math.atan
-    },
-    "ABS" : {
-        "inputs": 1,
-        "fun": Math.abs
-    },
-    "SQRT" : {
-        "inputs": 1,
-        "fun": Math.sqrt
-    },
-    "SQUARE" : {
-        "inputs": 1,
-        "fun": (a)=>{return Math.pow(a,2)}
+    "**" : {
+        "inputs": 2,
+        "fun": (a,b)=>{return [Math.pow(a,b)]},
+        "description": "Power operator (alias): A B ** = Aᴮ."
     },
     "POW" : {
         "inputs": 2,
-        "fun": Math.pow
+        "fun": (a,b)=>{return [Math.pow(a,b)]},
+        "description": "Power operator (alias): A B POW = Aᴮ."
+    },
+    "COS" : {
+        "inputs": 1,
+        "fun": (a)=>{return [Math.cos(a)]},
+        "description": "Cosine function."
+    },
+    "SIN" : {
+        "inputs": 1,
+        "fun": (a)=>{return [Math.sin(a)]},
+        "description": "Sine function."
+    },
+    "TAN" : {
+        "inputs": 1,
+        "fun": (a)=>{return [Math.tan(a)]},
+        "description": "Tangeant function."
+    },
+    "ACOS" : {
+        "inputs": 1,
+        "fun": (a)=>{return [Math.acos(a)]},
+        "description": "Arccosine function."
+    },
+    "ASIN" : {
+        "inputs": 1,
+        "fun": (a)=>{return [Math.asin(a)]},
+        "description": "Arcsine function."
+    },
+    "ATAN" : {
+        "inputs": 1,
+        "fun": (a)=>{return [Math.atan(a)]},
+        "description": "Arctangeant function."
+    },
+    "ABS" : {
+        "inputs": 1,
+        "fun": (a)=>{return [Math.abs(a)]},
+        "description": "Absolute value."
+    },
+    "SQRT" : {
+        "inputs": 1,
+        "fun": (a)=>{return [Math.sqrt(a)]},
+        "description": "Square root function."
+    },
+    "SQUARE" : {
+        "inputs": 1,
+        "fun": (a)=>{return [Math.pow(a,2)]},
+        "description": "Square function."
     },
     "EXP" : {
         "inputs": 1,
-        "fun": Math.exp
+        "fun": (a)=>{return [Math.exp(a)]},
+        "description": "Exponential function."
+    },
+    "LN" : {
+        "inputs": 1,
+        "fun": (a)=>{return [Math.log(a)]},
+        "description": "Natural logarithm function."
     },
     "LOG" : {
-        "inputs": 1,
-        "fun": Math.log
+        "inputs": 2,
+        "fun": (a,b)=>{return [Math.log(a)/Math.log(b)]},
+        "description": "Logarithm function in the base of the second parameter: A B LOG = LOGʙ(A) = LN(A)/LN(B)."
     },
     "MAX" : {
         "inputs": 2,
-        "fun": (a,b)=>{return Math.max(a,b)}
+        "fun": (a,b)=>{return [Math.max(a,b)]},
+        "description": "Maximum of two values."
     },
     "MIN" : {
         "inputs": 2,
-        "fun": (a,b)=>{return Math.min(a,b)}
+        "fun": (a,b)=>{return [Math.min(a,b)]},
+        "description": "Minimum of two values."
     },
     "NORM2D" : {
         "inputs": 2,
-        "fun": (a,b)=>{return Math.sqrt(Math.pow(a,2)+Math.pow(b,2))}
+        "fun": (a,b)=>{return [Math.sqrt(Math.pow(a,2)+Math.pow(b,2))]},
+        "description": "Norm of a 2D vector: A B NORM2D = SQRT(A²+B²)."
     },
     "NORM3D" : {
         "inputs": 3,
-        "fun": (a,b,c)=>{return Math.sqrt(Math.pow(a,2)+Math.pow(b,2)+Math.pow(c,2))}
+        "fun": (a,b,c)=>{return [Math.sqrt(Math.pow(a,2)+Math.pow(b,2)+Math.pow(c,2))]},
+        "description": "Norm of a 3D vector: A B C NORM3D = SQRT(A²+B²+C²)."
+    },
+    "DUP" : {
+        "inputs": 1,
+        "fun": (a)=>{return [a,a]},
+        "description": "Duplicates the top value in the pile."
+    },
+    "SWAP" : {
+        "inputs": 2,
+        "fun": (a,b)=>{return [b,a]},
+        "description": "Swaps the two top values in the pile."
     },
 };
 
 export function parseFormula(formula_string, variables){
     if(formula_string===""){
-        throw new Error('Formula evaluation : empty formula');
+        throw new Error('Formula evaluation: empty formula');
     }
     if(!isNaN(formula_string)){
         return parseFloat(formula_string);
@@ -107,7 +159,7 @@ export function parseFormula(formula_string, variables){
             if(pile.length<nb_inputs){
                 throw new Error('Formula evaluation : wrong pattern for "'+instruction+'" in formula "'+formula_string+'"');
             }
-            pile.push(formula_tags[instruction].fun(...pile.splice(-nb_inputs, nb_inputs)));
+            pile.push(...formula_tags[instruction].fun(...pile.splice(-nb_inputs, nb_inputs)));
         }
         else if(!isNaN(parseFloat(instruction))){
             pile.push(parseFloat(instruction));

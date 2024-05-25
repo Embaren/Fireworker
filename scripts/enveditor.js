@@ -1,62 +1,8 @@
 import {Color, Point, downloadJSON} from "/scripts/utils.js";
+import {document_createElement_vr, document_createBoldNode, document_createTooltip, getCustomRow} from "/scripts/DOMutils.js";
 import {Template} from "/scripts/fireworks.js";
 import {EmitterGroup} from "/scripts/environment.js";
 
-function document_createElement_vr(){
-    const vr = document.createElement('div');
-    vr.classList.add("vr");
-    const vertical_hr = document.createElement('hr');
-    vr.append(vertical_hr);
-    return vr;
-};
-
-function document_createBoldNode(str){
-    const text_node = document.createTextNode(str);
-    const b = document.createElement("b");
-    b.appendChild(text_node);
-    return b;
-}
-
-function getCustomRow(elements, ratios=[]){
-    const n = elements.length;
-    const m = ratios.length;
-    if(m>n){
-        throw new Error('make_custom_row: more ratios than elements');
-    }
-    
-    let ratios_sum = 0.;
-    for(let i=0 ; i<m ; i++){
-        ratios_sum += ratios[i];
-    }
-    if(ratios_sum>1.0001){
-        throw new Error('make_custom_row: ratios sum ('+ratios_sum.toString()+') greater than 1');
-    }
-    const ratio_step = (1. - ratios_sum)/(n-m)
-    for(let i=m ; i<n ; i++){
-        ratios.push(ratio_step);
-    }
-        
-    const row = document.createElement('div');
-    row.classList.add("custom_row");
-    
-    for(let i=0 ; i<n ; i++){
-        if(i>0){
-            row.append(document_createElement_vr());
-        }
-        const cell = document.createElement('div');
-        cell.classList.add("column");
-        cell.style.width = (ratios[i]*100).toFixed(4)+"%";
-        cell.style.height = "inherit";
-        const container = document.createElement('div');
-        if(elements[i]?.classList?.contains('column')){
-            container.style.height = "100%";
-        }
-        container.appendChild(elements[i]);
-        cell.appendChild(container);
-        row.append(cell);
-    }
-    return row;
-}
 
 function isCustomProperty(property,type){
     switch (type) {
@@ -571,7 +517,6 @@ class EnvTable{
 
 class SequenceEditor{
     constructor(env, template_manager, container){
-        
         this.env = env;
         this.container = container;
         this.template_manager = template_manager;
@@ -722,6 +667,8 @@ class SequenceEditor{
         this.planDiv.innerHTML = "";
         const title = document.createElement('h3');
         title.innerHTML = "Sequence";
+        const tooltip = document_createTooltip(document.createTextNode("A sequence is composed of multiple groups of emitters. It corresponds to the entire plan for you fireworks show."));
+        title.appendChild(tooltip);
         this.planDiv.appendChild(title);
         for(let i = 0 ; i < this.env.planned_groups.length ; i++){
             if(i>0){this.planDiv.appendChild(document.createElement('br'));}
@@ -1362,6 +1309,8 @@ class TemplateEditor{
         {
             const title = document.createElement('h3');
             title.innerHTML = "Template variables";
+            const tooltip = document_createTooltip(document.createTextNode("Variables are user-defined values that can be called in any upcoming field. They can be useful to reuse the same durations across multiple fireworks, or to create more controlled random colors."));
+            title.appendChild(tooltip);
             this.template_editor_div.appendChild(title);
         }
         
@@ -1452,13 +1401,26 @@ class TemplateEditor{
         templateVariablesBody.classList.add("content_div");
         templateVariablesBody.classList.add("variables");
         
-        { // Title row
-            const categories = disabled ? ["Name","Formula (Reversed Polish Notation)"] : ["Name","Formula (Reversed Polish Notation)", "Up", "Down", "Delete"];
+        { // Title row        
+            const categories = disabled ? ["Name","Formula (Reverse Polish Notation)"] : ["Name","Formula (Reverse Polish Notation)", "Up", "Down", "Delete"];
             const titles = [];
             const rowTitle = document.createElement("tr");
             for(const category of categories){
                 titles.push(document_createBoldNode(category));
             }
+            const tooltip_div = document.createElement("div");
+            const tooltip_text = document.createTextNode("Reverse Polish Notation is a postfix mathematical notation allowing to write formulas without the use of parenthesis. Access the ");
+            const tooltip_a = document.createElement("a");
+            tooltip_a.href = "./documentation/RPN";
+            const tooltip_a_text =  document.createTextNode("list of available functions");
+            tooltip_a.appendChild(tooltip_a_text);
+            const tooltip_text_end = document.createTextNode(".");
+            tooltip_div.appendChild(tooltip_text);
+            tooltip_div.appendChild(tooltip_a);
+            tooltip_div.appendChild(tooltip_text_end);
+            
+            const tooltip = document_createTooltip(tooltip_div);
+            titles[1].appendChild(tooltip);
             templateVariablesBody.appendChild(getCustomRow(titles,[.2, .6]));
         }
         
