@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- FIREWORKER v.0.5 -->
+<!-- FIREWORKER v.0.9 -->
 <!-- Emile BARBIER--RENARD - 2024 -->
 <!-- Contact : ebarbier@telecom-paris.fr -->
 <html lang="en">
@@ -8,517 +8,61 @@
     <title>FIREWORKER</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik+Scribble">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik">
-
-    <style>
-        body{
-            color:white;
-            text-align:center;
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            background-color:#000000;
-        }
-        
-        h1{
-            font-family:"Rubik Scribble";
-        }
-
-        canvas {
-            image-rendering: pixelated;
-        }
-        
-        p{
-            font-family:"Rubik";
-        }
-        
-    </style>
-
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+Symbols+2">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-
-    <h1>FIREWORKER v0.5</h1>
+    <h1>FIREWORKER v0.9</h1>
 	<div id="gameDiv">
 	</div>
-    <p>Click on the board to create beautiful fireworks!</h1>
+    <div id="controlDiv">
+    </div>
     
-	<script>        
-        // Utils and basic classes
-    
-        function componentToHex(c) {
-          var hex = c.toString(16);
-          return hex.length == 1 ? "0" + hex : hex;
-        }
-    
-        class Point {
-          constructor(x, y) {
-            this.x = x;
-            this.y = y;
-          }
-          add(velocity) {
-            return(new Point(this.x + velocity.x, this.y + velocity.y));
-          }
-          scale(factor) {
-            return(new Point(this.x * factor, this.y * factor));
-          }
-          norm() {
-            return Math.sqrt(this.x*this.x + this.y*this.y);
-          }
-        }
-        class Color {
-          constructor(r, g, b, a=1.) {
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
-          }
-          scale(factor) {
-            return new Color(this.r * factor, this.g * factor, this.b * factor, this.a)
-          }
-          scaleAlpha(factor) {
-            return new Color(this.r * factor, this.g * factor, this.b * factor, this.a * factor)
-          }
-          add(color) {
-            return new Color(this.r + color.r, this.g + color.g, this.b + color.b)
-          }
-          addAlpha(color) {
-            return new Color(this.r + color.r, this.g + color.g, this.b + color.b, this.a + color.a)
-          }
-          norm() {
-            return Math.sqrt(this.r*this.r + this.g*this.g + this.b*this.b);
-          }
-          html() {
-            return "#" + componentToHex(Math.round(this.r*255)) + componentToHex(Math.round(this.g*255)) + componentToHex(Math.round(this.b*255)) + componentToHex(Math.round(this.a*255));
-          }
-        }
-                
-        // Firework classes
+	<script type="module">        
+        import {Point} from "/scripts/utils.js";
+        import {Environment} from "/scripts/environment.js";
+        import {EnvEditor} from "/scripts/enveditor.js";
         
-        const BitType = {
-          main: 0,
-          trail: 1,
-        };
+        // Canvas auto-resize
         
-        const FireworkType = {
-          circle: 0,
-          directional: 1,
-          star4: 2,
-          star5: 3,
-          heart: 4,
-          spiral: 5,
-        };
-        
-        class Trail{
-          constructor(color, radius, lifespan, dispersion, amount=1, delay=0., end=Number.MAX_VALUE){
-            this.color = color;
-            this.radius = 1.;
-            this.lifespan = lifespan;
-            this.dispersion = dispersion;
-            this.amount = Math.round(amount);
-            this.delay = delay;
-            this.end = end;
-          }
-        }
-        
-        function getStarDistFun(nb_points){
-            return(x)=>(1.-Math.abs((x*nb_points/Math.PI)%2-1.)/2.);
-        }
-        
-        function getDistFun(shape_type = FireworkType.circle){
-            switch(shape_type){
-            case(FireworkType.circle):
-                return (x)=>(1.);
-                break;
-            case(FireworkType.directional):
-                return (x)=>(0.);
-                break;
-            case(FireworkType.star4):
-                return getStarDistFun(4);
-                break;
-            case(FireworkType.star5):
-                return getStarDistFun(5);
-                break;
-            default:
-                console.log("Invalid firework shape: not implemented yet. Default: circle");
-                return (x)=>(1.);            
-            }
-        }
-
-        class Bit {
-          constructor(pos, vel, color, base_radius=1., legacy = 0., type=BitType.main, status = true){
-            this.pos = pos;
-            this.vel = vel;
-            this.color = color;
-            this.radius = base_radius;
-            this.legacy = legacy;
-            this.age = 0.;
-            this.type = type;
-            this.status = status;
-          }
-          newPos(framerate) {
-            const scaled_vel = this.vel.scale(1./framerate);
-            return(new Point(this.pos.x + scaled_vel.x, this.pos.y + scaled_vel.y));
-          }
-        }
-        
-        class Firework {
-          constructor(ctx, pos, base_color, smoke_color, duration = 5., nb_bits = 1., bit_lifespan = 1., projection_speed = 1., initial_velocity=null, gravity, dampen = .5, cascade=null, trail=null, type = FireworkType.circle) {
-            this.ctx = ctx;
-            this.pos = pos;
-            this.bits = [];
-            this.color = base_color;
-            this.smoke_color = smoke_color;
-            this.duration = duration;
-            this.bit_lifespan = bit_lifespan;
-            this.initial_velocity = initial_velocity === null ? new Point(0,0) : initial_velocity;
-            this.projection_speed = projection_speed;
-            this.progress = 0.;
-            this.radius = 0.;
-            this.nb_bits = Math.round(nb_bits);
-            this.gravity = gravity;
-            this.bit_decay = 24;
-            this.cascade = cascade;
-            this.trail = trail;
-            this.type = type;
-            this.dampen = dampen;
+        function getSizeParameters(pixels_scale=1){         
+            const win_width = innerWidth;
+            const win_height = innerHeight;
             
-            const distFun = getDistFun(this.type);
-            
-            const phase = Math.random() * 2 * Math.PI;
-            for(let j = 0 ; j < this.nb_bits ; j ++){
-              const angle = (j+(Math.random()-.5)/2.) * 2 * Math.PI / this.nb_bits + phase;
-              const angle_phase = angle + phase;
-              const speed = projection_speed+(Math.random()-.5)*12.;
-              let vel = this.initial_velocity.add(new Point(Math.cos(angle_phase),Math.sin(angle_phase)).scale(speed*distFun(angle)));
-              const bit = new Bit(pos,vel,base_color,1.,0.,BitType.main,true);
-              this.bits.push(bit);
-            }
-          }
-          update(framerate) {
-          
-          
-            this.progress = this.progress+1/framerate;
-            
-            const newBits = [];
-            const newFireworks = [];
-            
-            const bit_instant_decay = this.bit_decay/framerate;
-            const instant_dampen = this.dampen**(1/framerate);
-            
-            for(let j = 0 ; j < this.bits.length ; j ++){
-              
-              switch(this.bits[j].type){
-              case BitType.main:
-                  if(this.bits[j].age==0.){
-                    const bit = new Bit(this.bits[j].newPos(framerate),this.bits[j].vel.scale(instant_dampen).add(this.gravity.scale(1./framerate)),this.bits[j].color,1.,this.bits[j].legacy+1./framerate*(1+(Math.random()-.5)/2.),BitType.main,true);
-                                        
-                    if(this.bits[j].legacy > this.duration){
-                    
-                      bit.status = false;
-                      const age = this.progress - this.duration;
-                      const bit_progress = Math.round(age*framerate/this.bit_lifespan);
-                      bit.color = bit.color.addAlpha(this.smoke_color.scaleAlpha((1+bit_instant_decay)**bit_progress-1)).scaleAlpha(1/((1+bit_instant_decay)**bit_progress));
-                      
-                      if((this.cascade !== null) && this.bits[j].status){
-                        newFireworks.push(new Firework(this.ctx,this.bits[j].pos,this.cascade.color,this.cascade.smoke_color,this.cascade.duration*(1+(Math.random()-.5)/10.),this.cascade.nb_bits,this.cascade.bit_lifespan,this.cascade.projection_speed, this.bits[j].vel, this.cascade.gravity, this.cascade.dampen, this.cascade.cascade, this.cascade.trail, this.cascade.type));
-                      }
-                    }
-                    if(this.progress <= this.duration + this.bit_lifespan){
-                      newBits.push(bit);
-                    }
-                    
-                    if((this.trail !== null) && this.bits[j].status && this.progress>=this.trail.delay && this.progress<=this.trail.end){
-                      for(let k = 0 ; k < this.trail.amount ; k++){
-                        const angle = Math.random() * 2 * Math.PI;
-                        const trailDir = new Point(Math.cos(angle),Math.sin(angle));
-                        const trailPos = this.bits[j].newPos(framerate).add(trailDir.scale(this.trail.dispersion*(Math.random()**2)));
-                        const trailBit = new Bit(trailPos,this.bits[j].vel,this.trail.color,this.trail.radius,0.,BitType.trail,false);
-                        newBits.push(trailBit);
-                      }
-                    }
-                  }
-                  this.bits[j].age = this.bits[j].age + (1.+(Math.random()-.5)*.1)/framerate;
-                  const bit_progress = this.bits[j].age/this.bit_lifespan;
-                  this.bits[j].color = this.bits[j].color.addAlpha(this.smoke_color.scaleAlpha(bit_instant_decay)).scaleAlpha(1/(1+bit_instant_decay));
-                  this.bits[j].radius = this.bits[j].radius*(10**(1/framerate));
-                  if(this.bits[j].age >= this.bit_lifespan){
-                    this.bits.splice(j,1);
-                    j = j-1;
-                  }
-                  break;
-              case BitType.trail:
-                  this.bits[j].age = this.bits[j].age + (1.+(Math.random()-.5)*.1)/framerate;
-                  if(this.bits[j].age >= this.trail.lifespan){
-                    this.bits.splice(j,1);
-                    j = j-1;
-                  }
-                  break;
-              default:
-                  break;
-              }
-            }
-            this.bits = newBits.concat(this.bits);
-            return([this.progress<(this.duration + 2.*this.bit_lifespan),newFireworks]);
-          }
-          display() {
-            for(const bit of this.bits){
-              this.ctx.strokeStyle = bit.color.html();
-              this.ctx.beginPath();
-              this.ctx.arc(bit.pos.x, bit.pos.y, bit.radius, 0, 2 * Math.PI);
-              this.ctx.stroke();
-            }
-            
-          }
-          makeRocket(origin, framerate, end_speed=40., dampen=.5) {
-            const difference = origin.scale(-1).add(this.pos);
-            const distance = difference.norm();
-            const instant_end_speed = end_speed/framerate;
-            const instant_dampen = dampen**(1/framerate)
-            
-            const speed = instant_dampen*instant_end_speed-instant_dampen*distance+distance;
-            const n = Math.log(instant_end_speed/speed)/Math.log(instant_dampen);
-            
-            return new Firework(this.ctx, origin, new Color(.8, .8, .8, 1.), new Color(.2, .2, .2, .1), duration=n/framerate, nb_bits=1, bit_lifespan=.75, projection_speed = 0., initial_velocity = difference.scale(speed/distance*framerate), gravity = new Point(0,0), dampen = dampen, cascade = this, trail = null, type = FireworkType.circle);
-          }
-        }
-        
-        class Emitter{
-            constructor(ctx, pos, firework, name = "Emitter", initial_velocity=null, delay = 0., duration=0.){
-                this.ctx = ctx;
-                this.name = name;
-                this.pos = pos;
-                this.firework = firework;
-                this.duration = duration;
-                this.delay = delay;
-                this.age = 0.;
-                this.initial_velocity = initial_velocity === null ? new Point(0,0) : initial_velocity;
-            }
-            emit(){
-                const new_firework = this.age < this.delay ? null : new Firework(this.ctx, this.pos, this.firework.color, this.firework.smoke_color, this.firework.duration*(1+(Math.random()-.5)/10.), this.firework.nb_bits,
-                                    this.firework.bit_lifespan, this.firework.projection_speed, this.initial_velocity,
-                                    this.firework.gravity, this.firework.dampen, this.firework.cascade, this.firework.trail, this.firework.type);
-                return new_firework;
-            }
-            update(framerate){
-                this.age = this.age + 1/framerate;
-                return this.age<=Math.ceil((this.delay+this.duration)*framerate)/framerate;
-            }
-        }
-        
-        // Environment
-        
-        class Environment{
-            constructor(canvas_id, create_canvas = false, framerate = 12, dampen = .95, gravity = new Point(.01,-.1), pixels_scale = 1, onclick = null, resize_function = null){
-                
-                this.pixels_scale = pixels_scale;
-                
-                if(create_canvas){
-                    this.canvas = document.createElement('canvas');
-                    this.canvas.id = canvas_id;
-                }
-                else{
-                    this.canvas = document.getElementById(canvas_id);
-                }
-                
-                this.ctx = this.canvas.getContext("2d");
-                this.framerate = framerate;
-                this.dampen = dampen;
-                this.gravity = gravity;
-                this.play_status = false;
-                this.emitters = [];
-                this.fireworks = [];
-                
-                this.resize_function = resize_function;
-                
-                if(this.resize_function !== null){
-                    const size = this.resize_function(this.pixels_scale);
-                    this.updateCanvasDims(size[0], size[1]);
-                }
-                
-                this.onclick = onclick(this);
-            }
-            updateCanvasDims(width, height){
-                if(this.canvas.width != width || this.canvas.height!=height){
-                    this.canvas.width = width;
-                    this.canvas.height = height;
-                    this.canvas.style.width = Math.round(width*this.pixels_scale).toString()+"px";
-                    this.canvas.style.height = Math.round(height*this.pixels_scale).toString()+"px";
-                }
-            }
-            play(){
-                this.play_status = true;
-                this.step();
-                this.canvas.addEventListener('mousedown', this.onclick);
-            }
-            pause(){
-                this.play_status = false;
-                this.canvas.removeEventListener('mousedown', this.onclick);
-            }
-            step(){
-                
-                if(this.resize_function !== null){
-                    const size = this.resize_function(this.pixels_scale);
-                    this.updateCanvasDims(size[0], size[1]);
-                }
-                
-                const width = this.canvas.width;
-                const height = this.canvas.height;
-            
-                // Background            
-                this.ctx.fillStyle = "black";
-                this.ctx.fillRect(0, 0, width, height);
-                
-                const grd = this.ctx.createLinearGradient(0, Math.round(height/2), 0, Math.round(3*height/2));
-                grd.addColorStop(0, "black");
-                grd.addColorStop(1, "DarkSlateBlue");
-                this.ctx.fillStyle = grd;
-                this.ctx.fillRect(0, Math.round(height/2), width, height);
-                
-                this.ctx.save();
-                this.ctx.translate(width/2, height);
-                this.ctx.scale(1,-1);
-                
-                for(let i = 0 ; i < this.emitters.length ; i ++){
-                  const new_firework = this.emitters[i].emit();
-                  if(new_firework!==null){
-                    this.fireworks.push(new_firework);
-                  }
-                  const alive = this.emitters[i].update(this.framerate);
-                  if(!alive){
-                    this.emitters.splice(i,1);
-                    i = i-1;
-                  }
-                }
-                
-                const newFireworks = [];
-                
-                for(let i = 0 ; i < this.fireworks.length ; i ++){
-                  this.fireworks[i].display();
-                  const [alive, newLocalFireworks] = this.fireworks[i].update(this.framerate);
-                  newFireworks.push(...newLocalFireworks);
-                  if(!alive){
-                    this.fireworks.splice(i,1);
-                    i = i-1;
-                  }
-                }
-                
-                this.ctx.restore();
-                
-                this.fireworks.push(...newFireworks);
-                
-                if(this.play_status){
-                    setTimeout(()=>{this.step()},1000/this.framerate);
-                }
-            }
-            
-            getCursorPosition(event) {
-                const rect = this.canvas.getBoundingClientRect();
-                const x = (event.clientX - rect.left)/this.pixels_scale-this.canvas.width/2;
-                const y = -(event.clientY - rect.top)/this.pixels_scale+this.canvas.height;
-                return new Point(x,y);
-            }
-        
-        }
-        
-        // Functions for a specific env
-        
-        function create_random_emitter(environment, pos){
-            const framerate = environment.framerate;
-            const dampen = environment.dampen;
-        
-            gravity = environment.gravity;
-            zeroPoint = new Point(0,0);
-            
-            const selector = Math.random()*5;
-            const rocketSpeed = 256/framerate;
-            
-            const origin = new Point((Math.random()-.5)*environment.canvas.width/2,0.);
-            
-            // Triple coconut
-            if(selector<3){
-                const color =  new Color(Math.random(),Math.random(),Math.random());
-                const color2 =  new Color(Math.random(),Math.random(),Math.random());
-                const color3 =  new Color(Math.random(),Math.random(),Math.random());
-                
-                //                 color,                                                        radius, lifespan, dispersion, amount,       delay
-                trail0 = new Trail(new Color(color.r,color.g,color.b,.5).scale(1./color.norm()),    1.5,      .75,         5.,      3, 1/framerate);
-            
-                cascade2 = new Firework(environment.ctx, zeroPoint,color3.scale(1./color3.norm()), new Color(.2,.2,.2,.2), duration = 1. + (Math.random()-.5)*.5, nb_bits=7.*(.2+Math.random()/1.5), bit_lifespan=1., projection_speed = 9., initial_velocity = null, gravity, dampen)
-                cascade1 = new Firework(environment.ctx, zeroPoint,color2.scale(1./color2.norm()), new Color(.2,.2,.2,.2), duration = 1.5 + (Math.random()-.5)*1., nb_bits=7.*(.5+Math.random()), bit_lifespan=1., projection_speed = 24., initial_velocity = null, gravity, dampen, cascade = cascade2, trail=null);
-            
-                firework = new Firework(environment.ctx, pos, color.scale(1./color.norm()), new Color(.2,.2,.2,.2), duration = 3. + (Math.random()-.5)*2., nb_bits = 7.*(1.+Math.random()*2.), bit_lifespan=1., projection_speed = 60., initial_velocity = null, gravity, dampen, cascade = cascade1, trail = trail0, type = FireworkType.circle);
-                            
-                const rocket = firework.makeRocket(origin, environment.framerate, end_speed=40., dampen);
-                
-                return new Emitter (environment.ctx, origin, rocket, name="Triple coconut", initial_velocity = rocket.initial_velocity);
-            }
-            
-            // Star strobe
-            if(selector<4 && selector>=3){
-                const white = new Color(1.,1.,1.,1.);
-                //                          color, radius,     lifespan, dispersion, amount, delay
-                trail_sparkling = new Trail(white,     1., 2./framerate,        10.,      1,    0.); 
-                cascade_sparkling = new Firework(environment.ctx, zeroPoint, new Color(0.,0.,0.,0.), new Color(.2,.2,.2,.1), duration = 2.5 + (Math.random()-.5)*1.2, nb_bits=7.*(.75+Math.random()/2.), bit_lifespan=.75, projection_speed = 1.2, initial_velocity = null, gravity, dampen, cascade = null, trail=trail_sparkling);
-
-                firework = new Firework(environment.ctx, pos, new Color(1.,1.,1.,.5), new Color(.2,.2,.2,.2), duration = 1. + (Math.random()-.5)*1., nb_bits = 7.*(2.+Math.random()*2.), bit_lifespan=1., projection_speed = 60., initial_velocity = null, gravity, dampen, cascade = cascade_sparkling, trail = null, type = FireworkType.star5);
-                
-                const rocket = firework.makeRocket(origin, environment.framerate, end_speed=40., dampen);
-                
-                return new Emitter (environment.ctx, origin, rocket, name="Triple coconut", initial_velocity = rocket.initial_velocity);
-            }
-            
-            // Gold fountain
-            if(selector<5 && selector>=4){
-                const gold_trans = new Color(.9,.7,.2,.5);
-                const gold_trans2 = new Color(.9,.7,.2,.2);
-                const gold_dust = new Color(.9,.7,.2,0.05);
-                
-                //                       color, radius, lifespan, dispersion, amount,       delay
-                trail0 = new Trail(gold_trans2,    1.5,      .75,         10.,      3, 1/framerate);
-                const time_to_reach = Math.random()+1.5;
-
-                firework = new Firework(environment.ctx, zeroPoint, gold_trans, gold_dust, duration = time_to_reach * (1.2+(Math.random()-.5)*.2), nb_bits = 4, bit_lifespan=.75, projection_speed = 6., initial_velocity = null, gravity, dampen, cascade = null, trail = trail0, type = FireworkType.circle);
-                return new Emitter(environment.ctx, origin, firework, name="Gold fountain", initial_velocity=origin.scale(-1).add(pos).scale(2./(time_to_reach)), delay=0., duration=1.8+Math.random()/3);
-                
-            }
-            
-        }
-        
-        function create_random_on_event(environment) {
-            return (e) => {
-                pos = environment.getCursorPosition(e);
-                
-                emitter = create_random_emitter(environment, pos);
-                
-                environment.emitters.push(emitter);
-            }
-        }
-        
-            // Canvas auto-resize
-        
-        function getSizeParameters(pixels_scale){         
-            win_width = innerWidth;
-            win_height = innerHeight;
-            
-            width = Math.round((0.8*win_width)/pixels_scale);
-            height = Math.round((0.8*win_height)/pixels_scale);
+            const width = Math.round((0.8*win_width)/pixels_scale);
+            const height = Math.round((0.8*win_height)/pixels_scale);
             
             return [width, height];
         }
         
         // Setting up environment
         
-        //                                  canvas ID, create new canvas?, framerate, dampen (over 1s),  gravity (over 1s), pixels_scale,                onclick,  rescale function
-        const environment = new Environment(   "game",               true,        12,              .45, new Point(2.,-20.),            2, create_random_on_event, getSizeParameters);
+        //                               canvas ID, create new canvas?, framerate, dampen (over 1s),  gravity (over 1s), pixels_scale,  rescale function
+        const game_env = new Environment(   "game",               true,        12,              .45, new Point(2.,-20.),            2, getSizeParameters);
         const gameDiv = document.getElementById("gameDiv");
-        gameDiv.appendChild(environment.canvas);
-        environment.play();
+        gameDiv.appendChild(game_env.canvas_group);
+        
+        game_env.play();
+        
+        const editor = new EnvEditor(game_env, document.getElementById("controlDiv"));
+        
         
         document.addEventListener("keydown", (e) => {
+          /*
           if(e.key==" "){
-            environment.play_status ? environment.pause() : environment.play();
+            game_env.play_status ? game_env.pause() : game_env.play();
           }
+          */
+          if(e.key=="Enter"){
+            game_env.execute();
+          }
+          /*
+          if(e.key=="r"){
+            editor.update();
+          }
+          */
         });
-        
 	</script>
 </body>

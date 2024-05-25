@@ -1,0 +1,203 @@
+{
+    "name": "Captain America",
+    "variables": [
+        ["DURATION","RANDOM .5 - 2 * 3 +"],
+        ["BASE_PROJECTION","RANDOM 40 * 60 +"]
+    ],
+    "emitter": {
+        "duration": 0,
+        "use_rocket": true,
+        "firework": {
+            "bit_color": [
+                0,
+                0,
+                0,
+                0
+            ],
+            "smoke_color": [
+                0,
+                0,
+                0,
+                0
+            ],
+            "duration": -1,
+            "nb_bits": 1,
+            "smoke_lifespan": 0,
+            "projection_speed": 0,
+            "shape": "circle",
+            "trail": null,
+            "cascades": [
+                {
+                    "bit_color": [
+                        1,
+                        0,
+                        0,
+                        1
+                    ],
+                    "smoke_color": [
+                        0.2,
+                        0.2,
+                        0.2,
+                        0.1
+                    ],
+                    "duration": "DURATION",
+                    "nb_bits": "4 RANDOM * 1 + 13 *",
+                    "smoke_lifespan": 1,
+                    "projection_speed": "BASE_PROJECTION 5 * 5 /",
+                    "shape": "circle",
+                    "trail": {
+                        "color": [
+                            "FROM_BIT",
+                            "FROM_BIT",
+                            "FROM_BIT",
+                            0.5
+                        ],
+                        "radius": 1,
+                        "lifespan": 0.75,
+                        "dispersion": 5,
+                        "amount": 3,
+                        "delay": "1 FRAMERATE /",
+                        "duration": null
+                    },
+                    "cascades": []
+                },
+                {
+                    "bit_color": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "smoke_color": [
+                        0.2,
+                        0.2,
+                        0.2,
+                        0.1
+                    ],
+                    "duration": "DURATION",
+                    "nb_bits": "4 RANDOM * 1 + 13 *",
+                    "smoke_lifespan": 1,
+                    "projection_speed": "BASE_PROJECTION 4 * 5 /",
+                    "shape": "circle",
+                    "trail": {
+                        "color": [
+                            "FROM_BIT",
+                            "FROM_BIT",
+                            "FROM_BIT",
+                            0.5
+                        ],
+                        "radius": 1,
+                        "lifespan": 0.5,
+                        "dispersion": 5,
+                        "amount": 3,
+                        "delay": "1 FRAMERATE /",
+                        "duration": null
+                    },
+                    "cascades": []
+                },
+                {
+                    "bit_color": [
+                        1,
+                        0,
+                        0,
+                        1
+                    ],
+                    "smoke_color": [
+                        0.2,
+                        0.2,
+                        0.2,
+                        0.1
+                    ],
+                    "duration": "DURATION",
+                    "nb_bits": "3 RANDOM * 1 + 13 *",
+                    "smoke_lifespan": 1,
+                    "projection_speed": "BASE_PROJECTION 3 * 5 /",
+                    "shape": "circle",
+                    "trail": {
+                        "color": [
+                            "FROM_BIT",
+                            "FROM_BIT",
+                            "FROM_BIT",
+                            0.5
+                        ],
+                        "radius": 1,
+                        "lifespan": 0.5,
+                        "dispersion": 5,
+                        "amount": 3,
+                        "delay": "1 FRAMERATE /",
+                        "duration": null
+                    },
+                    "cascades": []
+                },
+                {
+                    "bit_color": [
+                        0,
+                        0,
+                        1,
+                        1
+                    ],
+                    "smoke_color": [
+                        0.2,
+                        0.2,
+                        0.2,
+                        0.1
+                    ],
+                    "duration": "DURATION",
+                    "nb_bits": "2 RANDOM * 1 + 13 *",
+                    "smoke_lifespan": 1,
+                    "projection_speed": "BASE_PROJECTION 2 * 5 /",
+                    "shape": "circle",
+                    "trail": {
+                        "color": [
+                            "FROM_BIT",
+                            "FROM_BIT",
+                            "FROM_BIT",
+                            0.5
+                        ],
+                        "radius": 1,
+                        "lifespan": 0.5,
+                        "dispersion": 5,
+                        "amount": 3,
+                        "delay": "1 FRAMERATE /",
+                        "duration": null
+                    },
+                    "cascades": []
+                },
+                {
+                    "bit_color": [
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "smoke_color": [
+                        0.2,
+                        0.2,
+                        0.2,
+                        0.1
+                    ],
+                    "duration": "DURATION",
+                    "nb_bits": "2 RANDOM * 1 + 13 *",
+                    "smoke_lifespan": 1,
+                    "projection_speed": "BASE_PROJECTION 1.5 * 5 /",
+                    "shape": "star5",
+                    "trail": {
+                        "color": [
+                            "FROM_BIT",
+                            "FROM_BIT",
+                            "FROM_BIT",
+                            0.5
+                        ],
+                        "radius": 1,
+                        "lifespan": 0.5,
+                        "dispersion": 5,
+                        "amount": 3,
+                        "delay": "1 FRAMERATE /",
+                        "duration": null
+                    },
+                    "cascades": []
+                }
+            ]
+        }
+    }
+}

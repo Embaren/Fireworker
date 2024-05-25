@@ -1,0 +1,99 @@
+{
+    "name": "Triple coconut",
+    "variables": [
+        ["FIRST_R","RANDOM"],
+        ["FIRST_G","RANDOM"],
+        ["FIRST_B","RANDOM"],
+        ["SECOND_R","RANDOM"],
+        ["SECOND_G","RANDOM"],
+        ["SECOND_B","RANDOM"],
+        ["THIRD_R","RANDOM"],
+        ["THIRD_G","RANDOM"],
+        ["THIRD_B","RANDOM"],
+        ["FIRST_NORM","FIRST_R FIRST_G FIRST_B NORM3D"],
+        ["SECOND_NORM","SECOND_R SECOND_G SECOND_B NORM3D"],
+        ["THIRD_NORM","THIRD_R THIRD_G THIRD_B NORM3D"]
+        ],
+    "emitter": {
+        "duration": 0,
+        "use_rocket": true,
+        "firework": {
+            "bit_color": [
+                "FIRST_R FIRST_NORM /",
+                "FIRST_G FIRST_NORM /",
+                "FIRST_B FIRST_NORM /",
+                1
+            ],
+            "duration": "3 RANDOM .5 - 2 * +",
+            "nb_bits": "7 1 RANDOM 2 * + *",
+            "projection_speed": 60,
+            "shape": "circle",
+            "smoke_color": [
+                0.2,
+                0.2,
+                0.2,
+                0.1
+            ],
+            "smoke_lifespan": 1,
+            "trail": {
+                "color": [
+                    "FROM_BIT",
+                    "FROM_BIT",
+                    "FROM_BIT",
+                    0.5
+                ],
+                "radius": 1,
+                "lifespan": 0.75,
+                "dispersion": 5,
+                "amount": 3,
+                "delay": "1 FRAMERATE /",
+                "duration": null
+            },
+            "cascades": [
+                {
+                    "bit_color": [
+                    "SECOND_R SECOND_NORM /",
+                    "SECOND_G SECOND_NORM /",
+                    "SECOND_B SECOND_NORM /",
+                        1
+                    ],
+                    "duration": "RANDOM .5 - 1.5 +",
+                    "nb_bits": "RANDOM .5 + 7 *",
+                    "projection_speed": 24,
+                    "shape": "circle",
+                    "smoke_color": [
+                        0.2,
+                        0.2,
+                        0.2,
+                        0.1
+                    ],
+                    "smoke_lifespan": 1,
+                    "trail": null,
+                    "cascades": [
+                        {
+                            "bit_color": [
+                                "THIRD_R THIRD_NORM /",
+                                "THIRD_G THIRD_NORM /",
+                                "THIRD_B THIRD_NORM /",
+                                1
+                            ],
+                            "duration": "RANDOM .5 - .5 * 1 +",
+                            "nb_bits": "RANDOM 1.5 / .2 + 7 *",
+                            "projection_speed": 9,
+                            "shape": "circle",
+                            "smoke_color": [
+                                0.2,
+                                0.2,
+                                0.2,
+                                0.1
+                            ],
+                            "smoke_lifespan": 1,
+                            "trail": null,
+                            "cascades": []
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

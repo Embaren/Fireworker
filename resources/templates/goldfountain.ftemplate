@@ -1,0 +1,42 @@
+{
+    "name": "Gold fountain",
+    "variables": [],
+    "emitter": {
+        "duration": "1.8 RANDOM 3 / +",
+        "use_rocket": false,
+        "firework": {
+            "bit_color": [
+                0.9,
+                0.7,
+                0.2,
+                0.5
+            ],
+            "duration": "2 1.2 .2 RANDOM .5 - * + *",
+            "nb_bits": 4,
+            "projection_speed": 6,
+            "shape": "circle",
+            "smoke_color": [
+                0.9,
+                0.7,
+                0.2,
+                0.05
+            ],
+            "smoke_lifespan": 0.75,
+            "trail": {
+                "color": [
+                    "FROM_BIT",
+                    "FROM_BIT",
+                    "FROM_BIT",
+                    0.2
+                ],
+                "radius": 1,
+                "lifespan": 0.75,
+                "dispersion": 10,
+                "amount": 3,
+                "delay": "1 FRAMERATE /",
+                "duration": null
+            },
+            "cascades": []
+        }
+    }
+}

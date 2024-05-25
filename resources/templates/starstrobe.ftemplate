@@ -1,0 +1,64 @@
+{
+    "name": "Star strobe",
+    "variables": [],
+    "emitter": {
+        "duration": 0,
+        "use_rocket": true,
+        "firework": {
+            "bit_color": [
+                1,
+                1,
+                1,
+                0.5
+            ],
+            "duration": "RANDOM .5 - 1 +",
+            "nb_bits": "RANDOM 2 * 2 + 7 *",
+            "projection_speed": 60,
+            "shape": "star5",
+            "smoke_color": [
+                0.2,
+                0.2,
+                0.2,
+                0.1
+            ],
+            "smoke_lifespan": 1,
+            "trail": null,
+            "cascades": [
+                {
+                    "bit_color": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "duration": "RANDOM .5 - 1.2 * 2.5 +",
+                    "nb_bits": "RANDOM 2 / .75 + 7 *",
+                    "projection_speed": 1.2,
+                    "shape": "circle",
+                    "smoke_color": [
+                        0.2,
+                        0.2,
+                        0.2,
+                        0.1
+                    ],
+                    "smoke_lifespan": 0.75,
+                    "trail": {
+                        "color": [
+                            1,
+                            1,
+                            1,
+                            1
+                        ],
+                        "radius": 1,
+                        "lifespan": "2 FRAMERATE /",
+                        "dispersion": 10,
+                        "amount": 1,
+                        "delay": 0,
+                        "duration": null
+                    },
+                    "cascades": []
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,358 @@
+body{
+    color:white;
+    font-family:"Rubik";
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    background-color:#000000;
+    autocomplete:"off";
+}
+
+h1{
+    font-family:"Rubik Scribble";
+    font-size: 2em;
+    margin: .67em 0;
+}
+
+hr{
+    border:solid white thin;
+}
+
+#template_name_input {
+    font-size: 2em;
+    font-weight: bold;
+    text-align:center
+    
+}
+
+canvas {
+    image-rendering: pixelated;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+button{
+    font-family: inherit;
+    font-size: inherit;
+    color: DarkSlateBlue;
+    border: solid DarkSlateBlue;
+    background: white;
+    border-radius : 10px;
+    font-weight: bold;
+}
+button:disabled{
+    opacity: .25;
+}
+button:hover{
+    background-color: lavender;
+}
+button:disabled:hover{
+    background: white;
+    opacity: .25;
+}
+.icon_button{
+    font-family: "Noto Sans Symbols 2";
+    font-size: 1.17em;
+    height: 2em;
+    width: 2em;
+}
+
+.ui-layer {
+    z-index: 3;
+}
+.game-layer {
+    z-index: 2;
+}
+.background-layer {
+    z-index: 1;
+}
+
+select{
+    font-family: inherit;
+    font-size: inherit;
+    border-radius : 5px;
+    border: none;
+    color: DarkSlateBlue;
+    outline: none;
+}
+select hr{
+    color: DarkSlateBlue;
+}
+.base_option{
+    background-color: lavenderblush;
+}
+.custom_option{
+    background-color: lavender;
+}
+
+label {
+    display: flex;
+    align-items: center;
+}
+label input, label select{
+    margin-left: 1em;
+}
+
+table, th, td {
+    border: 1px solid;
+    border-collapse: collapse;
+    border-color: white;
+}
+
+.content_div {
+    padding-top : 8px;
+    padding-bottom : 8px;
+    border: solid white;
+    border-radius : 10px;
+}
+.selected_group .content_div{
+    background: MediumPurple;
+}
+.selected_group button{
+    color: MediumPurple;
+    border: solid MediumPurple;
+}
+.emitter {
+    background-color: darksalmon;
+}
+.emitter button{
+    color: darksalmon;
+    border: solid white;
+}
+.emitter button:hover{
+    background-color:beige;
+}
+.emitter input, .emitter select{
+    color: darksalmon;
+}
+.firework {
+    background-color: palevioletred;
+}
+.firework button{
+    color: palevioletred;
+    border: solid white;
+}
+.firework button:hover{
+    background-color:mistyrose;
+}
+.firework input,.firework select{
+    color: palevioletred;
+}
+.variables {
+    background-color: teal;
+}
+.variables button{
+    color: teal;
+    border: solid white;
+}
+.variables button:hover{
+    background-color:ivory;
+}
+.content_div:has(.add_content_button) {
+    padding-bottom : 0;
+}
+.add_content_button {
+    margin-bottom: 3px;
+    border-radius:0;
+    padding-top : 8px;
+    padding-bottom : 8px;
+    margin-top : 8px;
+    margin-bottom : 0;
+}
+
+
+.edit_emitter_div {
+    background: palevioletred;
+    border: solid white;
+    border-radius: 10px;
+}
+.plan_div, .edit_emitter_div {
+    overflow-x:auto;
+}
+
+.edit_emitter_div button, tr.selected_emitter button{
+    color: palevioletred;
+    border: solid palevioletred;
+}
+.edit_emitter_div select{
+    color: palevioletred;
+}
+
+.edit_emitter_div table{
+    width:100%;
+}
+
+.emitter_div {
+    
+}
+
+.utils_div{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.custom_row{
+    display: flex;
+}
+.selected_row{
+    padding-top: 8px;
+    margin-top: -8px;
+    padding-bottom: 8px;
+    margin-bottom: -8px;
+}
+.column{
+    display: flex;
+    flex-direction:column;
+    justify-content:space-around;
+    height:100%;
+}
+
+.vr{
+    display: flex;
+    margin-top: -8px;
+    margin-bottom: -8px;
+}
+.vr hr{
+    margin: 0;
+}
+
+.firework_div {
+    padding-left: 3ch;
+    border-left: solid white;
+}
+.firework_div table{
+    border-left: solid white;
+}
+
+.display_editor_div p{
+    margin-top: 0px;
+}
+
+.display_editor_div button{
+    color: white;
+    border: solid white;
+    border-radius: 10px;
+    background: transparent;
+    font-size: 1.17em;
+    padding-top: 0.34em;
+    padding-bottom: 0.34em;
+}
+.display_editor_div button:hover{
+    background-color: #3e3769;
+}
+
+.create_group_button{
+    color: white;
+    border: solid white;
+    border-radius: 10px;
+    background: transparent;
+    font-size: 1.17em;
+    padding-top: 0.34em;
+    padding-bottom: 0.34em;
+}
+.create_group_button:hover{
+    background-color: #3e3769;
+}
+
+input[type="text"],input[type="number"] {
+    background-color: transparent;
+    color: inherit;
+    border: solid 1px;
+    border-radius: 5px;
+    width: 95%;
+    font-family: inherit;
+    font-size: inherit;
+}
+input:disabled {
+    border: none;
+}
+input:focus-visible {
+    outline: none;
+    border-bottom: dotted 2px;
+}
+
+input[type="number"] {
+    width: 6ch;
+}
+input[type="number"][min="0"] {
+    width: 4ch;
+}
+
+input[type="text"].formula_input{
+    font-family: "Roboto Mono";
+}
+
+.tabs{
+    width: 100%;
+}
+.tabs button{
+    width: 50%;
+    background-color: Transparent;
+    color: white;
+    border-top: none;
+    border-right: none;
+    border-left: none;
+    border-bottom: solid white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    font-size: 1.17em;
+    font-weight: bold;
+    padding-top: 0.34em;
+    padding-bottom: 0.34em;
+}
+.tabs button:hover{
+    border-top: solid lavender;
+    border-right: solid lavender;
+    border-left: solid lavender;
+    color: lavender;
+    background: #3e3769;
+}
+.tabs button.active_tab{
+    border-top: solid white;
+    border-right: solid white;
+    border-left: solid white;
+    border-bottom: solid DarkSlateBlue;
+    background: DarkSlateBlue;
+}
+.tab_content{
+    background-color: DarkSlateBlue;
+    border-right: solid white;
+    border-left: solid white;
+    border-bottom: solid white;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.wide {
+    width: 100%;
+}
+.shift {
+    padding-left: 3ch;
+}
+
+.variable_formula{
+    width: 100%;
+}
+.variable_formula input{
+    width: 98%;
+}
+
+ 
+ 
+#panel{
+    position:relative;
+    width:80vw;
+    left:20vw;
+    z-index:500%;
+    background-color: red;
+    top:2em;
+}
+
+button.activeCoordEditor{
+    background: lightgreen;
+}

@@ -1,0 +1,111 @@
+{
+    "name": "Sparkling heart",
+    "variables": [
+        [
+            "DURATION",
+            "RANDOM .5 - 1.2 * 2.5 +"
+        ],
+        [
+            "HEART_B",
+            "RANDOM"
+        ],
+        [
+            "HEART_G",
+            "HEART_B RANDOM *"
+        ]
+    ],
+    "emitter": {
+        "duration": 0,
+        "use_rocket": true,
+        "firework": {
+            "shape": "heart",
+            "bit_color": [
+                1,
+                0.25,
+                0.25,
+                0.25
+            ],
+            "duration": "RANDOM .5 - 1 +",
+            "nb_bits": "RANDOM 2 * 2 + 7 *",
+            "projection_speed": 60,
+            "smoke_color": [
+                0.2,
+                0.2,
+                0.2,
+                0.1
+            ],
+            "smoke_lifespan": 1,
+            "trail": null,
+            "cascades": [
+                {
+                    "bit_color": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "duration": "DURATION",
+                    "nb_bits": "RANDOM 2 / .75 + 7 *",
+                    "projection_speed": 1.2,
+                    "shape": "circle",
+                    "cascades": [],
+                    "smoke_color": [
+                        0.2,
+                        0.2,
+                        0.2,
+                        0.1
+                    ],
+                    "smoke_lifespan": 0.75,
+                    "trail": {
+                        "color": [
+                            1,
+                            "HEART_G",
+                            "HEART_B",
+                            1
+                        ],
+                        "radius": 1,
+                        "lifespan": "2 FRAMERATE /",
+                        "dispersion": 10,
+                        "amount": 1,
+                        "delay": 0,
+                        "duration": null
+                    }
+                },
+                {
+                    "bit_color": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "duration": "DURATION",
+                    "nb_bits": "2",
+                    "projection_speed": 1.2,
+                    "shape": "circle",
+                    "cascades": [],
+                    "smoke_color": [
+                        0.2,
+                        0.2,
+                        0.2,
+                        0.1
+                    ],
+                    "smoke_lifespan": 0.75,
+                    "trail": {
+                        "color": [
+                            1,
+                            1,
+                            1,
+                            1
+                        ],
+                        "radius": 0.5,
+                        "lifespan": "2 FRAMERATE /",
+                        "dispersion": 10,
+                        "amount": 1,
+                        "delay": 0,
+                        "duration": null
+                    }
+                }
+            ]
+        }
+    }
+}
