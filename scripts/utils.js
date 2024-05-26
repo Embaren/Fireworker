@@ -143,7 +143,7 @@ export const formula_tags = {
 
 export function parseFormula(formula_string, variables){
     if(formula_string===""){
-        throw new Error('Formula evaluation: empty formula');
+        throw new Error('Formula evaluation: empty formula.');
     }
     if(!isNaN(formula_string)){
         return parseFloat(formula_string);
@@ -157,7 +157,7 @@ export function parseFormula(formula_string, variables){
         if(instruction in formula_tags){
             const nb_inputs = formula_tags[instruction].inputs;
             if(pile.length<nb_inputs){
-                throw new Error('Formula evaluation : wrong pattern for "'+instruction+'" in formula "'+formula_string+'"');
+                throw new Error('Formula evaluation : wrong pattern for "'+instruction+'" in formula "'+formula_string+'".');
             }
             pile.push(...formula_tags[instruction].fun(...pile.splice(-nb_inputs, nb_inputs)));
         }
@@ -168,15 +168,15 @@ export function parseFormula(formula_string, variables){
                     pile.push(variables[instruction]);
                 }
         else{
-            throw new Error('Formula evaluation : unknown instruction "'+instruction+'" in formula ""'+formula_string+'"');
+            throw new Error('Formula evaluation : unknown instruction "'+instruction+'" in formula "'+formula_string+'".');
         }
     }
     
     if(pile.length==0){
-        throw new Error('Formula evaluation : no value remaining');
+        throw new Error('Formula evaluation : no value remaining in formula "'+formula_string+'".');
     }
     if(pile.length>1){
-        throw new Error('Formula evaluation : more than 1 value remaining');
+        throw new Error('Formula evaluation : more than 1 value remaining in formula "'+formula_string+'".');
     }
     return pile[0];
 }

@@ -701,12 +701,17 @@ class SequenceEditor{
         selector_button.id = "template_selector_button";
         selector_button.onclick = ()=>{
             const origin = new Point((Math.random()-.5)*this.env.game_canvas.width/2,0.);
-            const emitter = this.template_manager.getSelected().getEmitter(origin,origin);
-            this.coordEditor.updateFromInput(emitter, 'sync',()=>{
-                const j = this.env.planned_groups[this.selected_group].length;
-                this.env.planned_groups[this.selected_group].push(emitter);
-                this.selectGroup(this.selected_group);
-            })(selector_button)();
+            try{
+                const emitter = this.template_manager.getSelected().getEmitter(origin,origin);
+                this.coordEditor.updateFromInput(emitter, 'sync',()=>{
+                    const j = this.env.planned_groups[this.selected_group].length;
+                    this.env.planned_groups[this.selected_group].push(emitter);
+                    this.selectGroup(this.selected_group);
+                })(selector_button)();
+            }
+            catch(err){
+                window.alert("The emitter could not be created due to the following error:\n\n"+err);
+            }
         }
         selector_button.disabled = this.selected_group<0;
         const cell_text = document.createTextNode(this.selected_group < 0 ? "No group selected" : "Add emitter");
@@ -1329,6 +1334,9 @@ class TemplateEditor{
         {
             const title = document.createElement('h3');
             title.innerHTML = "Fireworks";
+            const tooltip_text = document.createTextNode("A firework charge corresponds to the projection of multiple bits (or fragments) when exploding. The cascades are the firework charges that will detonate from a bit when its lifspan is over.");
+            const tooltip = document_createTooltip(tooltip_text);
+            title.appendChild(tooltip);
             this.template_editor_div.appendChild(title);
         }
         
@@ -1411,7 +1419,7 @@ class TemplateEditor{
             const tooltip_div = document.createElement("div");
             const tooltip_text = document.createTextNode("Reverse Polish Notation is a postfix mathematical notation allowing to write formulas without the use of parenthesis. Access the ");
             const tooltip_a = document.createElement("a");
-            tooltip_a.href = "./documentation/RPN";
+            tooltip_a.href = "/documentation/RPN";
             const tooltip_a_text =  document.createTextNode("list of available functions");
             tooltip_a.appendChild(tooltip_a_text);
             const tooltip_text_end = document.createTextNode(".");
@@ -1493,9 +1501,12 @@ class TemplateEditor{
         return template_emitter_div;
     }
     
-    getCustomPropertyRow(data,field,label,type,depth,disabled=true){
+    getCustomPropertyRow(data,field,label,type,depth,disabled=true,tooltip=null){
         
             const row_label = document_createBoldNode(label);
+            if(tooltip){
+                row_label.appendChild(tooltip);
+            }
             
             const is_custom = isCustomProperty(data[field],type);
             
