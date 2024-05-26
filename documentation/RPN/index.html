@@ -5,7 +5,7 @@
 <html lang="en">
 <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <title>FIREWORKER - Reverse Polish Notation</title>
+    <title>FIREWORKER</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik+Scribble">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+Symbols+2">
@@ -15,44 +15,9 @@
 </head>
 
 <body>
-    <h1>FIREWORKER</h1>
-    <h2>Reverse Polish Notation</h2>
-    <div style="width: 80vw;">
-        <div id="documentation">
-        </div>
-        <div id="dictDiv" class="wide">
-        </div>
-    </div>
-    
-	<script type="module">        
-        import {formula_tags} from "/scripts/utils.js";
-        import {document_createBoldNode, getCustomRow} from "/scripts/DOMutils.js";
-        
-        
-        const dictDiv = document.getElementById("dictDiv");
-        
-        { // Functions
-            const functionsListDiv = document.createElement("div");
-            functionsListDiv.classList.add("content_div");
-            functionsListDiv.classList.add("variables");
-            
-            const categories = ["Identifier","Nb inputs","Description"];
-            const titles = [];
-            for(const category of categories){
-                titles.push(document_createBoldNode(category));
-            }
-            const titles_row = getCustomRow(titles, [0.2, 0.1, 0.7]);
-            functionsListDiv.appendChild(titles_row);
-            for(const [formula_id, formula] of Object.entries(formula_tags)){
-                const hr = document.createElement("hr");
-                functionsListDiv.appendChild(hr);
-                const identifier = document.createTextNode(formula_id);
-                const nb_inputs = document.createTextNode(formula.inputs);
-                const description = document.createTextNode(formula.description ? formula.description : "No description");
-                const row = getCustomRow([identifier,nb_inputs,description], [0.2, 0.1, 0.7]);
-                functionsListDiv.appendChild(row);
-            }
-            dictDiv.appendChild(functionsListDiv);
-        }
-	</script>
+    <h1><a href="/">FIREWORKER</a></h1>
+    <div id="path_div"></div>
+    <div id="main_div"></div>
+	<script src="/scripts/pathbar.js" type="module"></script>
+	<script src="script.js" type="module"></script>
 </body>

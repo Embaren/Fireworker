@@ -49,6 +49,16 @@ export const formula_tags = {
         "fun": (a,b)=>{return [Math.pow(a,b)]},
         "description": "Power operator (alias): A B POW = Aᴮ."
     },
+    "NEG" : {
+        "inputs": 1,
+        "fun": (a)=>{return [-a]},
+        "description": "Negation function: A NEG = -A."
+    },
+    "INV" : {
+        "inputs": 1,
+        "fun": (a)=>{return [1/a]},
+        "description": "Inverse function: A INV = 1/A."
+    },
     "COS" : {
         "inputs": 1,
         "fun": (a)=>{return [Math.cos(a)]},
@@ -132,12 +142,12 @@ export const formula_tags = {
     "DUP" : {
         "inputs": 1,
         "fun": (a)=>{return [a,a]},
-        "description": "Duplicates the top value in the pile."
+        "description": "Duplicates value on top of the pile. A DUP => (A,A)."
     },
     "SWAP" : {
         "inputs": 2,
         "fun": (a,b)=>{return [b,a]},
-        "description": "Swaps the two top values in the pile."
+        "description": "Swaps the two values on top of the stack. A B SWAP => (B,A)"
     },
 };
 

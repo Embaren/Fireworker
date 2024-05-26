@@ -65,7 +65,7 @@
                         "dispersion": 5,
                         "amount": 3,
                         "delay": "1 FRAMERATE /",
-                        "duration": 1.7976931348623157e308
+                        "duration": null
                     },
                     "cascades": []
                 },
@@ -99,7 +99,7 @@
                         "dispersion": 5,
                         "amount": 3,
                         "delay": "1 FRAMERATE /",
-                        "duration": 1.7976931348623157e308
+                        "duration": null
                     },
                     "cascades": []
                 }

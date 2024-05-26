@@ -32,7 +32,13 @@ function create_random_emitter_from_template(environment, pos, templates){
     
     const template_id = Math.floor(Math.random()*templates.length);
     
-    return templates[template_id].getEmitter(origin, pos);
+    try{
+        const emitter = templates[template_id].getEmitter(origin, pos);
+        return emitter;
+    }
+    catch(err){
+        window.alert('The emitter could not be created from template "'+templates[template_id].name+'" due to the following error:\n\n'+err);
+    }
 }
 
 class TemplatesManager{
@@ -710,7 +716,7 @@ class SequenceEditor{
                 })(selector_button)();
             }
             catch(err){
-                window.alert("The emitter could not be created due to the following error:\n\n"+err);
+                window.alert('The emitter could not be created from template "'+this.template_manager.getSelected().name+'" due to the following error:\n\n'+err);
             }
         }
         selector_button.disabled = this.selected_group<0;
@@ -1354,7 +1360,7 @@ class TemplateEditor{
         const input_name = getInputElement('text', variable[0], disabled, updateFieldFromInput(variable, 0, (x)=>{return x}, "variable_row_"+suffix));
         cells.push(input_name);
         const input_formula = getInputElement('text', variable[1], disabled, updateFieldFromInput(variable, 1, (x)=>{return x}, "variable_row_"+suffix));
-        input_formula.classList.add("formula_input")
+        input_formula.classList.add("formula")
         cells.push(input_formula);
         
         if(!disabled){
@@ -1480,7 +1486,7 @@ class TemplateEditor{
             duration_label.appendChild(duration_text);
             
             const element = getInputElement("text",template.emitter.duration, disabled, disabled ? null : updateFieldFromInput(template.emitter, "duration", (x)=>{return x}), "template_duration_input");
-            element.classList.add("formula_input");
+            element.classList.add("formula");
             duration_label.appendChild(element);
             
             utils_div.appendChild(duration_label);
@@ -1514,15 +1520,15 @@ class TemplateEditor{
                                                         const div = document.createElement("div");
                                                         
                                                         ["R","G","B","A"].forEach((c,i)=>{
-                                                            const input = getInputElement("text", data[field][i], disabled, updateFieldFromInput(data[field],0,(x)=>{return x}), "firework_template_"+field+"_custom_"+depth.join('_'));
-                                                            input.classList.add("formula_input");
+                                                            const input = getInputElement("text", data[field][i], disabled, updateFieldFromInput(data[field],i,(x)=>{return x}), "firework_template_"+field+"_custom_"+depth.join('_'));
+                                                            input.classList.add("formula");
                                                             div.appendChild(input);
                                                         });
                                                         return div;
                                                      })()
                                                    : (()=>{
                                                           const input = getInputElement("text", data[field], disabled, updateFieldFromInput(data,field,(x)=>{return x}), "firework_template_"+field+"_custom_"+depth.join('_'));
-                                                          input.classList.add("formula_input");
+                                                          input.classList.add("formula");
                                                           return input;
                                                       })();
             
@@ -1625,7 +1631,7 @@ class TemplateEditor{
                 
                 const row_custom_input = (()=>{
                     const input = getInputElement("text", data['duration'], disabled, updateFieldFromInput(data,'duration',(x)=>{return x}), "firework_template_trail_duration_custom_"+depth.join('_'));
-                    input.classList.add("formula_input");
+                    input.classList.add("formula");
                     return input;
                 })();
                 const get_formula_row = ()=>{

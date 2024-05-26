@@ -5,7 +5,7 @@
 <html lang="en">
 <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <title>FIREWORKER - Documentation</title>
+    <title>FIREWORKER</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik+Scribble">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+Symbols+2">
@@ -15,27 +15,9 @@
 </head>
 
 <body>
-    <h1>FIREWORKER</h1>
-    <h2>Documentation</h2>
-    <div style="width: 80vw;">
-        <div id="documentation">
-        </div>
-    </div>
-    
-	<script type="module">        
-        import {document_createBoldNode, getCustomRow} from "/scripts/DOMutils.js";
-        
-        const docuDiv = document.getElementById("documentation");
-        
-        {
-            const p = document.createElement("p");
-            const a = document.createElement("a");
-            a.href = "/documentation/RPN";
-            const a_text =  document.createTextNode("Reversed Polish Notation and available functions");
-            a.appendChild(a_text);
-            p.appendChild(a);
-            docuDiv.appendChild(p);
-        }
-        
-	</script>
+    <h1><a href="/">FIREWORKER</a></h1>
+    <div id="path_div"></div>
+    <div id="main_div"></div>
+	<script src="/scripts/pathbar.js" type="module"></script>
+	<script src="script.js" type="module"></script>
 </body>
