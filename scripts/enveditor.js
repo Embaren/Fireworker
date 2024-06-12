@@ -755,8 +755,23 @@ class SequenceEditor{
             title.appendChild(run_button);
         }
         this.planDiv.appendChild(title);
+        
+        {
+            const group_title_div = document.createElement("div");
+            group_title_div.classList.add("content_div");
+            group_title_div.classList.add("group");
+            const elements = [];
+            const titles = ["Select","Expand","Group name","Group delay (s)", "Save", "Preview", "Delete"];
+            for(const title of titles){
+                elements.push(document_createBoldNode(title));
+            }
+            const dims = [];
+            const button_width = 0.2/3;
+            const row = getCustomRow(elements,[button_width,button_width, 3*(1-button_width*5)/4., (1-button_width*5)/4.,button_width,button_width,button_width]);
+            group_title_div.appendChild(row);
+            this.planDiv.appendChild(group_title_div);
+        }
         for(let i = 0 ; i < this.env.planned_groups.length ; i++){
-            if(i>0){this.planDiv.appendChild(document.createElement('br'));}
             this.planDiv.appendChild(this.getGroupDiv(i));
         }
     }
@@ -875,10 +890,8 @@ class SequenceEditor{
             
             { // Group delay
                 const cell = document.createElement("div");
-                const cell_text = document.createTextNode("Group delay (s) : ")
                 const delay_element = getInputElement("number",group.delay, false, updateFieldFromInput(group, 'delay', parseFloat));
 
-                cell.appendChild(cell_text);
                 cell.appendChild(delay_element);
                 cell.id = "group_delay_"+i.toFixed();
                 elements.push(cell);
@@ -919,7 +932,7 @@ class SequenceEditor{
                 elements.push(button);
             }
             const button_width = 0.2/3;
-            const row = getCustomRow(elements,[button_width,button_width, (1-button_width*5)/2., (1-button_width*5)/2.,button_width,button_width,button_width]);
+            const row = getCustomRow(elements,[button_width,button_width, 3*(1-button_width*5)/4., (1-button_width*5)/4.,button_width,button_width,button_width]);
             content_div.appendChild(row);
             group_div.appendChild(content_div);
         }
