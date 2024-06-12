@@ -12,11 +12,42 @@ mainDiv.appendChild(docDiv);
     docDiv.appendChild(h2_docu);
 }
 {
-    const p = document.createElement("p");
+    const a = document.createElement("a");
+    a.href = "/documentation/firework_composition";
+    a.classList.add("content_div");
+    a.classList.add("a_button");
+    a.classList.add("firework");
+    const a_text =  document.createTextNode("➲ Firework composition ➲");
+    a.appendChild(a_text);
+    docDiv.appendChild(a);
+}
+{
+    const a = document.createElement("a");
+    a.href = "/documentation/sequence_structure";
+    a.classList.add("content_div");
+    a.classList.add("a_button");
+    a.classList.add("sequence");
+    const a_text =  document.createTextNode("➲ Sequence structure ➲");
+    a.appendChild(a_text);
+    docDiv.appendChild(a);
+}
+{
     const a = document.createElement("a");
     a.href = "/documentation/RPN";
-    const a_text =  document.createTextNode("Reversed Polish Notation and available functions");
+    a.classList.add("content_div");
+    a.classList.add("a_button");
+    a.classList.add("variables");
+    const a_text =  document.createTextNode("➲ Reverse Polish Notation and available functions ➲");
     a.appendChild(a_text);
-    p.appendChild(a);
+    docDiv.appendChild(a);
+}
+{ // Thank you
+    const p = document.createElement("p");
+    const small = document.createElement("small");
+    const i = document.createElement("i");
+    const ty_text =  document.createTextNode("Thank you Pauline for the amazing idea and for allowing me to nastily steal it :)");
+    i.appendChild(ty_text);
+    small.appendChild(i);
+    p.appendChild(small);
     docDiv.appendChild(p);
 }

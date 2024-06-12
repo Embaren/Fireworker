@@ -15,8 +15,10 @@ export function document_createBoldNode(str){
 
 export function document_createTooltip(tooltip_content){
     const tooltip = document.createElement("span");
+    const b = document.createElement("b");
     const icon = document.createTextNode("ⓘ");
-    tooltip.appendChild(icon);
+    b.appendChild(icon);
+    tooltip.appendChild(b);
     
     const span = document.createElement("span");
     span.appendChild(tooltip_content);
@@ -50,7 +52,7 @@ export function getCustomRow(elements, ratios=[]){
     
     for(let i=0 ; i<n ; i++){
         if(i>0){
-            row.append(document_createElement_vr());
+            row.appendChild(document_createElement_vr());
         }
         const cell = document.createElement('div');
         cell.classList.add("column");
@@ -62,7 +64,7 @@ export function getCustomRow(elements, ratios=[]){
         }
         container.appendChild(elements[i]);
         cell.appendChild(container);
-        row.append(cell);
+        row.appendChild(cell);
     }
     return row;
 }

@@ -1,0 +1,1 @@
+{"name":"Demo Continuous","variables":[],"emitter":{"duration":"1","use_rocket":true,"firework":{"bit_color":["1","0","0",1],"duration":1.47,"nb_bits":21,"projection_speed":20,"shape":"circle","smoke_color":[0.2,0.2,0.2,0.1],"smoke_lifespan":1,"trail":null,"cascades":[]}}}

@@ -2,7 +2,53 @@ import {Color, Point, downloadJSON} from "/scripts/utils.js";
 import {document_createElement_vr, document_createBoldNode, document_createTooltip, getCustomRow} from "/scripts/DOMutils.js";
 import {Template} from "/scripts/fireworks.js";
 import {EmitterGroup} from "/scripts/environment.js";
+import {getTooltip} from "/scripts/tooltips.js";
 
+
+const shape_to_char = {
+    "circle": "○",
+    "disk": "●",
+    "star4": "✧",
+    "star5": "☆",
+    "heart": "♡",
+    "square": "□",
+    "spiral1L": "𖦹"
+}
+function get_shape_symbol(shape){
+    if(shape in shape_to_char){
+        return shape_to_char[shape];
+    }
+    else{
+        return "";
+    }
+}
+
+const emitter_properties_names = {
+    "emitter_name": "Name",
+    "origin": "Origin [x]",
+    "target": "Target [x,y]",
+    "emitter_duration": "Emitter duration",
+    "rocket_time": "Rocket time",
+    "emitter_delay": "Delay",
+}
+const firework_properties_names = {
+    "bit_color": "Fragment head color",
+    "nb_bits": "Nb fragments",
+    "duration": "Fragment lifespan",
+    "smoke_lifespan": "Smoke lifespan",
+    "smoke_color": "Smoke color",
+    "projection_speed": "Projection speed",
+    "trail": "Trail"
+}
+const trail_properties_names = {
+    "color": "Trail particles color",
+    "radius": "Trail particles radius",
+    "lifespan": "Trail particles lifespan",
+    "dispersion": "Trail dispersion",
+    "amount": "Trail particles amount",
+    "delay": "Trail delay",
+    "duration": "Trail duration"
+}
 
 function isCustomProperty(property,type){
     switch (type) {
@@ -23,6 +69,13 @@ function isCustomProperty(property,type){
             true;
         break;
     }
+}
+function isCustomColorNotFromBit(property){
+    let is_custom_color = false;
+    for(let i=0 ; i<4 ; i++){
+        is_custom_color = is_custom_color || (isNaN(property[i]) && property[i]!=="FROM_BIT");
+    }
+    return is_custom_color;
 }
 
 // Functions for a specific env
@@ -58,10 +111,10 @@ class TemplatesManager{
                         .then((response) => response.json())
                         .then((json) => {this.base.push(Template.load(json,this.env));this.length+=1;})
                         );
+                }
                 Promise.all(promises).then((values)=>{
                     this.postLoading();
                 });
-                }
             });
     }
     all(){
@@ -74,6 +127,17 @@ class TemplatesManager{
     addCustom(template){
         this.custom.push(template);
         this.length+=1;
+    }
+    delete(i){
+        const custom_idx = i-this.base.length;
+        const prev_length = this.custom.length;
+        this.custom.splice(custom_idx,1);
+        if(prev_length>this.custom.length){
+            this.length-=1;
+        }
+        if(this.selected_template > 0 && this.selected_template>=this.length){
+            this.selected_template-=1;
+        }
     }
     getSelected(){
         return this.all()[this.selected_template];
@@ -187,6 +251,7 @@ class CoordEditor{
             }
             post_fun();
         });
+        this.on_deactivate = ()=>{};
         this.cursor.on();
     }
     
@@ -197,7 +262,11 @@ class CoordEditor{
         }
         this.cursor.env.setOnclick();
         this.active=null;
+        this.on_deactivate();
+        this.on_deactivate = ()=>{};
     }
+    
+    
     
     updateFromInput(emitter,type,post_fun=()=>{}){
         return (button, text=undefined)=>{
@@ -383,7 +452,7 @@ function getInputElement(type, value, disabled = true, on_change=null, id=""){
                 for(const shape of Object.keys(Template._fireworkShapes_)){
                     const option = document.createElement("option");
                     option.value = shape;
-                    const optionText = document.createTextNode(shape);
+                    const optionText = document.createTextNode(get_shape_symbol(shape) + " " + shape);
                     option.appendChild(optionText);
                     element.appendChild(option);
                 }
@@ -589,7 +658,7 @@ class SequenceEditor{
         { // Create group section
             const createGroupDiv = document.createElement("div");
             const createGroupButton = document.createElement("button");
-            createGroupButton.classList.add("create_group_button");
+            createGroupButton.classList.add("big_button");
             createGroupButton.onclick = ()=>{this.env.createGroup("Group "+this.env.planned_groups.length.toFixed()); this.update();}
             const cell_text = document.createTextNode("Create new group");
             createGroupButton.appendChild(cell_text);
@@ -675,6 +744,16 @@ class SequenceEditor{
         title.innerHTML = "Sequence";
         const tooltip = document_createTooltip(document.createTextNode("A sequence is composed of multiple groups of emitters. It corresponds to the entire plan for you fireworks show."));
         title.appendChild(tooltip);
+        { // Run sequence button
+            const run_button = document.createElement("button");
+            run_button.onclick = ()=> {this.env.execute()};
+            run_button.appendChild(document.createTextNode("Play sequence"));
+            const tooltip = document_createTooltip(document.createTextNode("You can also play the sequence by pressing 'ENTER' on your keyboard."));
+            tooltip.addEventListener("mouseenter", (event) => {run_button.onclick = ()=>{};});
+            tooltip.addEventListener("mouseleave", (event) => {run_button.onclick = ()=> {this.env.execute()};});
+            run_button.appendChild(tooltip);
+            title.appendChild(run_button);
+        }
         this.planDiv.appendChild(title);
         for(let i = 0 ; i < this.env.planned_groups.length ; i++){
             if(i>0){this.planDiv.appendChild(document.createElement('br'));}
@@ -684,6 +763,11 @@ class SequenceEditor{
     
     updateTemplateSelector(){
         this.templateSelectorSpan.innerHTML = "";
+        
+        
+        const tooltip_text = document.createTextNode("Click on the board to preview the selected template.");
+        const tooltip = document_createTooltip(tooltip_text);
+        this.templateSelectorSpan.appendChild(tooltip);
         
         const template_selector = document.createElement("select");
         template_selector.classList.add((this.template_manager.selected_template<this.template_manager.base.length) ? 'base_option' : 'custom_option');
@@ -705,23 +789,40 @@ class SequenceEditor{
 
         const selector_button = document.createElement("button");
         selector_button.id = "template_selector_button";
-        selector_button.onclick = ()=>{
-            const origin = new Point((Math.random()-.5)*this.env.game_canvas.width/2,0.);
-            try{
-                const emitter = this.template_manager.getSelected().getEmitter(origin,origin);
-                this.coordEditor.updateFromInput(emitter, 'sync',()=>{
-                    const j = this.env.planned_groups[this.selected_group].length;
-                    this.env.planned_groups[this.selected_group].push(emitter);
-                    this.selectGroup(this.selected_group);
-                })(selector_button)();
+        {
+            if(this.selected_group<0){
+                selector_button.disabled = true;
+                const cell_text = document.createTextNode("No group selected ");
+                selector_button.appendChild(cell_text);
+                const tooltip_text = document.createTextNode("To select a group, click on the circular button on the left of the group.");
+                const tooltip = document_createTooltip(tooltip_text);
+                selector_button.appendChild(tooltip);
             }
-            catch(err){
-                window.alert('The emitter could not be created from template "'+this.template_manager.getSelected().name+'" due to the following error:\n\n'+err);
+            else{
+                const cell_text = document.createTextNode("Add emitter");
+                selector_button.appendChild(cell_text);
+                selector_button.onclick = ()=>{
+                    { // Text
+                        const font = "1em "+'"Rubik", sans-serif';
+                        this.env.writeText("Click on the board to create the emitter",new Point(0.,50.),2.,font,new Color(1,1,1),[1.,1.]);
+                    }
+                    template_selector.disabled = true;
+                    const origin = new Point((Math.random()-.5)*this.env.game_canvas.width/2,0.);
+                    try{
+                        const emitter = this.template_manager.getSelected().getEmitter(origin,origin);
+                        this.coordEditor.updateFromInput(emitter, 'sync',()=>{
+                            const j = this.env.planned_groups[this.selected_group].length;
+                            this.env.planned_groups[this.selected_group].push(emitter);
+                            this.selectGroup(this.selected_group);
+                        })(selector_button)();
+                        this.coordEditor.on_deactivate = ()=>{template_selector.disabled = false;};
+                    }
+                    catch(err){
+                        window.alert('The emitter could not be created from template "'+this.template_manager.getSelected().name+'" due to the following error:\n\n'+err);
+                    }
+                }
             }
         }
-        selector_button.disabled = this.selected_group<0;
-        const cell_text = document.createTextNode(this.selected_group < 0 ? "No group selected" : "Add emitter");
-        selector_button.appendChild(cell_text);
         
         this.templateSelectorSpan.appendChild(template_selector);
         this.templateSelectorSpan.appendChild(selector_button);
@@ -731,6 +832,7 @@ class SequenceEditor{
         const isActive = this.selected_group==i;
         
         const group_div = document.createElement("div");
+        group_div.classList.add("group");
         const content_div = document.createElement("div");
         const plan_div = document.createElement("div");
         plan_div.hidden = !isActive;
@@ -828,23 +930,26 @@ class SequenceEditor{
         
         if(group.length==0){
             const p = document.createElement("p");
-            const text_element = document.createTextNode("Empty group");
+            const text_element = document.createTextNode(isActive ? "Empty group. New emitters will be added to this group." : "Empty group. Select the group (circular button on the left) to start adding emitters to it.");
             p.appendChild(text_element);
             plan_div.appendChild(p);
         }
         else{            
-            const categories = ["Name",
-                            "Origin [x] (pix)",
-                            "Target [x,y] (pix)",
-                            "Duration (s)",
-                            "Delay (s)",
-                            "Rocket time (s)"];
+            const categories = ['emitter_name',
+                                'origin',
+                                'target',
+                                'emitter_duration',
+                                'emitter_delay',
+                                'rocket_time'];
             const button_categories = ["Reroll","Edit","Preview","Delete"];
             const title_elements = [];
             const title_dims = [];
             for(const category of categories){
-                title_elements.push(document_createBoldNode(category));
-                title_dims.push(category=="Name" ? 0.2 : (0.8-button_categories.length*0.2/3)/(categories.length-1));
+                const title_wrapper = document.createElement("div");
+                title_wrapper.appendChild(document_createBoldNode(emitter_properties_names[category]));
+                title_wrapper.appendChild(getTooltip(category));
+                title_elements.push(title_wrapper);
+                title_dims.push(category=="emitter_name" ? 0.2 : (0.8-button_categories.length*0.2/3)/(categories.length-1));
             }
             for(const category of button_categories){
                 title_elements.push(document_createBoldNode(category));
@@ -1001,18 +1106,21 @@ class SequenceEditor{
         
         const emitter = this.env.planned_groups[this.selected_group].emitters[this.selected_emitter];
         
-        const categories = ["Name",
-                            "Origin [x] (pix)",
-                            "Target [x,y] (pix)",
-                            "Duration (s)",
-                            "Delay (s)",
-                            "Rocket time (s)"];
+        const categories = ['emitter_name',
+                            'origin',
+                            'target',
+                            'emitter_duration',
+                            'emitter_delay',
+                            'rocket_time'];
         const button_categories = ["Reroll","Edit","Preview","Delete"];
         const title_elements = [];
         const title_dims = [];
         for(const category of categories){
-            title_elements.push(document_createBoldNode(category));
-            title_dims.push(category=="Name" ? 0.2 : (0.8-button_categories.length*0.2/3)/(categories.length-1));
+            const title_wrapper = document.createElement("div");
+            title_wrapper.appendChild(document_createBoldNode(emitter_properties_names[category]));
+            title_wrapper.appendChild(getTooltip(category));
+            title_elements.push(title_wrapper);
+            title_dims.push(category=="emitter_name" ? 0.2 : (0.8-button_categories.length*0.2/3)/(categories.length-1));
         }
         for(const category of button_categories){
             title_elements.push(document_createBoldNode(category));
@@ -1038,8 +1146,11 @@ class SequenceEditor{
         emitRow.replaceWith(this.getEmitterRow(i,j,edit));
     }
     
-    getCustomPropertyRow(data,field,label,type,depth,disabled=true){
+    getCustomPropertyRow(data,field,label,type,depth,disabled=true,tooltip=null){
             const row_label = document_createBoldNode(label);
+            if(tooltip){
+                row_label.appendChild(tooltip);
+            }
             
             const row_input = type=="color" ? getInputElement('color', data[field].html(), disabled, updateColorFromInput(data,field), "firework_"+field+"_"+depth.join('_'))
                                             : getInputElement(type, data[field], disabled, updateFieldFromInput(data,field,type=="number" ? parseFloat : type=="integer" ? parseInt : null), "firework_"+field+"_"+depth.join('_'));
@@ -1077,7 +1188,9 @@ class SequenceEditor{
         { // Shape
             const shape_div = document.createElement("div");
             const shape_label = document.createElement("label");
-            const shape_label_text = document_createBoldNode("Shape: ");
+            const shape_label_text = document_createBoldNode("Shape");
+            shape_label_text.appendChild(getTooltip("shape"));
+            shape_label_text.appendChild(document.createTextNode(": "));
             shape_label.appendChild(shape_label_text);
             const element = getInputElement("shape",Object.keys(Template._fireworkShapes_)[firework.shape], true, null);
             shape_label.appendChild(element);
@@ -1086,13 +1199,16 @@ class SequenceEditor{
         }
         { // Use trail
             const use_trail_div = document.createElement("div");
-            const use_trail_text = document_createBoldNode(firework.trail!==null ? "Has a trail" : "No trail");
+            const use_trail_text = document_createBoldNode(firework.trail!==null ? "Has a trail" : "No trail");            
             use_trail_div.appendChild(use_trail_text);
+            use_trail_div.appendChild(getTooltip("trail"));
+            
             firework_data_header.appendChild(use_trail_div);
         }
         { // Nb cascades
             const nb_cascades_div = document.createElement("div");
             const nb_cascades_text = document_createBoldNode(firework.cascades.length.toFixed() + " cascade(s)");
+            nb_cascades_text.appendChild(getTooltip("cascade"));
             nb_cascades_div.appendChild(nb_cascades_text);
             firework_data_header.appendChild(nb_cascades_div);
         }
@@ -1100,25 +1216,25 @@ class SequenceEditor{
         {
             const hr = document.createElement('hr');
             firework_properties_div.append(hr);
-            const row = this.getCustomPropertyRow(firework,'bit_color','Bit color','color',depth,!isCustomProperty(template_data['bit_color'],'color'));
+            const row = this.getCustomPropertyRow(firework,'bit_color',firework_properties_names['bit_color'],'color',depth,!isCustomProperty(template_data['bit_color'],'color'),getTooltip("head_color"));
             firework_properties_div.append(row);
         }
         {
             const hr = document.createElement('hr');
             firework_properties_div.append(hr);
-            const row = this.getCustomPropertyRow(firework,'duration','Duration','number',depth,!isCustomProperty(template_data['duration'],'number'));
+            const row = this.getCustomPropertyRow(firework,'nb_bits',firework_properties_names['nb_bits'],'integer',depth,!isCustomProperty(template_data['nb_bits'],'integer'),getTooltip("nb_bits"));
             firework_properties_div.append(row);
         }
         {
             const hr = document.createElement('hr');
             firework_properties_div.append(hr);
-            const row = this.getCustomPropertyRow(firework,'nb_bits','Nb bits','integer',depth,!isCustomProperty(template_data['nb_bits'],'integer'));
+            const row = this.getCustomPropertyRow(firework,'duration',firework_properties_names['duration'],'number',depth,!isCustomProperty(template_data['duration'],'number'),getTooltip("fragment_lifespan"));
             firework_properties_div.append(row);
         }
         {
             const hr = document.createElement('hr');
             firework_properties_div.append(hr);
-            const row = this.getCustomPropertyRow(firework,'projection_speed','Projection speed','number',depth,!isCustomProperty(template_data['projection_speed'],'number'));
+            const row = this.getCustomPropertyRow(firework,'projection_speed',firework_properties_names['projection_speed'],'number',depth,!isCustomProperty(template_data['projection_speed'],'number'),getTooltip("projection_speed"));
             firework_properties_div.append(row);
         }
         
@@ -1127,51 +1243,59 @@ class SequenceEditor{
             {
                 const hr = document.createElement('hr');
                 firework_properties_div.append(hr);
-                const trail_text = document_createBoldNode("Trail");
+                const trail_text = document_createBoldNode(firework_properties_names['trail']);
+                trail_text.appendChild(getTooltip("trail"));
                 const row = getCustomRow([trail_text]);
                 firework_properties_div.append(row);
             }
             {
                 const hr = document.createElement('hr');
                 firework_properties_div.append(hr);
-                const row = this.getCustomPropertyRow(trail,'color','Trail color','color',depth,!isCustomProperty(template_data.trail['color'],'color'));
+                const row = this.getCustomPropertyRow(trail,'color',trail_properties_names['color'],'color',depth,!isCustomColorNotFromBit(template_data.trail['color']),getTooltip("trail_color"));
                 firework_properties_div.append(row);
             }
             {
                 const hr = document.createElement('hr');
                 firework_properties_div.append(hr);
-                const row = this.getCustomPropertyRow(trail,'radius','Trail radius','number',depth,!isCustomProperty(template_data.trail['radius'],'number'));
+                const row = this.getCustomPropertyRow(trail,'radius',trail_properties_names['radius'],'number',depth,!isCustomProperty(template_data.trail['radius'],'number'),getTooltip("trail_radius"));
                 firework_properties_div.append(row);
             }
             {
                 const hr = document.createElement('hr');
                 firework_properties_div.append(hr);
-                const row = this.getCustomPropertyRow(trail,'dispersion','Trail dispersion','number',depth,!isCustomProperty(template_data.trail['dispersion'],'number'));
+                const row = this.getCustomPropertyRow(trail,'lifespan',trail_properties_names['lifespan'],'number',depth,!isCustomProperty(template_data.trail['lifespan'],'number'),getTooltip("trail_lifespan"));
                 firework_properties_div.append(row);
             }
             {
                 const hr = document.createElement('hr');
                 firework_properties_div.append(hr);
-                const row = this.getCustomPropertyRow(trail,'amount','Trail amount','integer',depth,!isCustomProperty(template_data.trail['amount'],'integer'));
+                const row = this.getCustomPropertyRow(trail,'amount',trail_properties_names['amount'],'integer',depth,!isCustomProperty(template_data.trail['amount'],'integer'),getTooltip("trail_amount"));
                 firework_properties_div.append(row);
             }
             {
                 const hr = document.createElement('hr');
                 firework_properties_div.append(hr);
-                const row = this.getCustomPropertyRow(trail,'delay','Trail delay','number',depth,!isCustomProperty(template_data.trail['delay'],'number'));
+                const row = this.getCustomPropertyRow(trail,'dispersion',trail_properties_names['dispersion'],'number',depth,!isCustomProperty(template_data.trail['dispersion'],'number'),getTooltip("trail_dispersion"));
+                firework_properties_div.append(row);
+            }
+            {
+                const hr = document.createElement('hr');
+                firework_properties_div.append(hr);
+                const row = this.getCustomPropertyRow(trail,'delay',trail_properties_names['delay'],'number',depth,!isCustomProperty(template_data.trail['delay'],'number'),getTooltip("trail_delay"));
                 firework_properties_div.append(row);
             }
             {
                 const hr = document.createElement('hr');
                 firework_properties_div.append(hr);
                 if(trail.duration===null){
-                    const row_label = document_createBoldNode("Trail duration");
+                    const row_label = document_createBoldNode(trail_properties_names['duration']);
+                    row_label.appendChild(getTooltip("trail_duration"));
                     const row_content = document.createTextNode("No duration limit");
                     const row = getCustomRow([row_label, row_content],[0.2, 0.8])
                     firework_properties_div.append(row);
                 }
                 else{
-                    const row = this.getCustomPropertyRow(trail,'duration','Trail duration','number',depth,!isCustomProperty(template_data.trail['duration'],'number'));
+                    const row = this.getCustomPropertyRow(trail,trail_properties_names['duration'],'Trail duration','number',depth,!isCustomProperty(template_data.trail['duration'],'number'),getTooltip("trail_duration"));
                     firework_properties_div.append(row);
                 }
             }
@@ -1216,17 +1340,19 @@ class TemplateEditor{
         { // Import section
             const importSpan = document.createElement("span");
             
-            const templateUploadButton = getUploadButton((e) => {
-                const template_data = JSON.parse(e.target.result);
-                this.template_manager.loadCustom(template_data);
-                this.template_manager.selected_template = this.template_manager.length-1;
-                this.update();
-              }, "Load", ".ftemplate", true);
             
-            importSpan.appendChild(templateUploadButton);
-            
-            {
-                const env = this.env;
+            { // New
+                const newButton = document.createElement("button")
+                newButton.onclick = ()=>{
+                    this.template_manager.addCustom(new Template("New template", Template.getEmitterTemplate(),[],this.env));
+                    this.template_manager.selected_template = this.template_manager.length-1;
+                    this.update();
+                }
+                const cell_text = document.createTextNode("New");
+                newButton.appendChild(cell_text);
+                importSpan.appendChild(newButton);
+            }
+            { // Duplicate
                 const duplicateButton = document.createElement("button");
                 duplicateButton.onclick = ()=> {
                     const template = this.template_manager.getSelected().copy();
@@ -1238,15 +1364,15 @@ class TemplateEditor{
                 duplicateButton.appendChild(cell_text);
                 importSpan.appendChild(duplicateButton);
             }
-              
-            { // Download
-                const template = this.template_manager.all();
-                const saveButton = document.createElement("button")
-                saveButton.onclick = ()=>{this.template_manager.export(this.template_manager.selected_template);}
-                const cell_text = document.createTextNode("Save");
-                saveButton.appendChild(cell_text);
-                importSpan.appendChild(saveButton);
-            }
+            
+            // Upload
+            const templateUploadButton = getUploadButton((e) => {
+                const template_data = JSON.parse(e.target.result);
+                this.template_manager.loadCustom(template_data);
+                this.template_manager.selected_template = this.template_manager.length-1;
+                this.update();
+              }, "Load", ".ftemplate", true);
+            importSpan.appendChild(templateUploadButton);
               
             this.utilsDiv.appendChild(importSpan);
         }
@@ -1273,6 +1399,10 @@ class TemplateEditor{
     updateTemplateSelector(){
         this.templateSelectorSpan.innerHTML = "";
         
+        const tooltip_text = document.createTextNode("Click on the board to preview the selected template.");
+        const tooltip = document_createTooltip(tooltip_text);
+        this.templateSelectorSpan.appendChild(tooltip);
+        
         const template_selector = document.createElement("select");
         template_selector.classList.add((this.template_manager.selected_template<this.template_manager.base.length) ? 'base_option' : 'custom_option');
         template_selector.id = "template_selector_group";
@@ -1289,8 +1419,29 @@ class TemplateEditor{
         }
         template_selector.value = this.template_manager.selected_template;
         template_selector.addEventListener("input", ()=>{this.template_manager.selected_template=template_selector.value;this.update()});
-        
+            
         this.templateSelectorSpan.appendChild(template_selector);
+          
+        { // Download
+            const saveButton = document.createElement("button");
+            saveButton.onclick = ()=>{this.template_manager.export(this.template_manager.selected_template);}
+            const cell_text = document.createTextNode("Save");
+            saveButton.appendChild(cell_text);
+            this.templateSelectorSpan.appendChild(saveButton);
+        }
+        { // Delete
+            const deleteButton = document.createElement("button");
+            deleteButton.disabled = (this.template_manager.selected_template<this.template_manager.base.length);
+            deleteButton.onclick = ()=>{
+                if(window.confirm("Delete the selected template?")){
+                    this.template_manager.delete(this.template_manager.selected_template);
+                    this.update();
+                }
+            }
+            const cell_text = document.createTextNode("Delete");
+            deleteButton.appendChild(cell_text);
+            this.templateSelectorSpan.appendChild(deleteButton);
+        }
     }
     
     updateEditorDiv(){
@@ -1331,6 +1482,9 @@ class TemplateEditor{
         {
             const title = document.createElement('h3');
             title.innerHTML = "Emitter";
+            const tooltip_text = document.createTextNode("The emitter defines how the firework is launched. An emitter can work in two different modes: either launching a rocket which will explode the charge at the target or directly igniting the charge with an initial velocity towards the target. It can also emit a firework continuously through its 'duration'.");
+            const tooltip = document_createTooltip(tooltip_text);
+            title.appendChild(tooltip);
             this.template_editor_div.appendChild(title);
         }
         
@@ -1339,8 +1493,8 @@ class TemplateEditor{
         
         {
             const title = document.createElement('h3');
-            title.innerHTML = "Fireworks";
-            const tooltip_text = document.createTextNode("A firework charge corresponds to the projection of multiple bits (or fragments) when exploding. The cascades are the firework charges that will detonate from a bit when its lifspan is over.");
+            title.innerHTML = "Charges";
+            const tooltip_text = document.createTextNode("A firework charge corresponds to the projection of multiple fragments when exploding. The cascades are the firework charges that will detonate from a fragment when its lifspan is over.");
             const tooltip = document_createTooltip(tooltip_text);
             title.appendChild(tooltip);
             this.template_editor_div.appendChild(title);
@@ -1426,6 +1580,7 @@ class TemplateEditor{
             const tooltip_text = document.createTextNode("Reverse Polish Notation is a postfix mathematical notation allowing to write formulas without the use of parenthesis. Access the ");
             const tooltip_a = document.createElement("a");
             tooltip_a.href = "/documentation/RPN";
+            tooltip_a.addEventListener('click', (e)=>{if (!window.confirm('Leave this page? All unsaved progress will be lost.')) e.preventDefault();}, false);
             const tooltip_a_text =  document.createTextNode("list of available functions");
             tooltip_a.appendChild(tooltip_a_text);
             const tooltip_text_end = document.createTextNode(".");
@@ -1482,7 +1637,8 @@ class TemplateEditor{
         { // Duration
             const duration_label = document.createElement("label");
             
-            const duration_text = document_createBoldNode("Duration: ");
+            const duration_text = document_createBoldNode(emitter_properties_names['emitter_duration']);
+            duration_text.appendChild(getTooltip("emitter_duration"));
             duration_label.appendChild(duration_text);
             
             const element = getInputElement("text",template.emitter.duration, disabled, disabled ? null : updateFieldFromInput(template.emitter, "duration", (x)=>{return x}), "template_duration_input");
@@ -1494,10 +1650,12 @@ class TemplateEditor{
         { // Use rocket
             const use_rocket_label = document.createElement("label");
             
-            const use_rocket_text = document_createBoldNode("Use rocket? ");
+            const use_rocket_text = document_createBoldNode("Use rocket");
+            use_rocket_text.appendChild(getTooltip("rocket"));
+            use_rocket_text.appendChild(document.createTextNode("? "));
             use_rocket_label.appendChild(use_rocket_text);
             
-            const element = getInputElement("bool",template.emitter.use_rocket, disabled, disabled ? null : (e)=>{template.emitter.use_rocket=!template.emitter.use_rocket;}, "template_use_rocket_input");
+            const element = getInputElement("bool",template.emitter.use_rocket.toString(), disabled, disabled ? null : (e)=>{template.emitter.use_rocket=!template.emitter.use_rocket;}, "template_use_rocket_input");
             use_rocket_label.appendChild(element);
             
             utils_div.appendChild(use_rocket_label);
@@ -1518,19 +1676,18 @@ class TemplateEditor{
             
             const row_custom_input = type=="color" ? (()=>{
                                                         const div = document.createElement("div");
-                                                        
                                                         ["R","G","B","A"].forEach((c,i)=>{
                                                             const input = getInputElement("text", data[field][i], disabled, updateFieldFromInput(data[field],i,(x)=>{return x}), "firework_template_"+field+"_custom_"+depth.join('_'));
                                                             input.classList.add("formula");
                                                             div.appendChild(input);
                                                         });
                                                         return div;
-                                                     })()
+                                                     })
                                                    : (()=>{
                                                           const input = getInputElement("text", data[field], disabled, updateFieldFromInput(data,field,(x)=>{return x}), "firework_template_"+field+"_custom_"+depth.join('_'));
                                                           input.classList.add("formula");
                                                           return input;
-                                                      })();
+                                                      });
             
             const get_formula_row = ()=>{
                 return type=="color" ? getCustomRow([row_label,(()=>{
@@ -1543,8 +1700,8 @@ class TemplateEditor{
                                                             color_labels.appendChild(label_div);
                                                         });
                                                         color_labels.classList.add("column");
-                                                        return color_labels;})(),row_custom_input],[0.2,0.1,0.7])
-                                     : getCustomRow([row_label,row_custom_input],[0.2,0.8]);
+                                                        return color_labels;})(),row_custom_input()],[0.2,0.1,0.7])
+                                     : getCustomRow([row_label,row_custom_input()],[0.2,0.8]);
             }
             if(is_custom){
                 return get_formula_row();
@@ -1573,38 +1730,44 @@ class TemplateEditor{
         {
             const hr = document.createElement('hr');
             container.append(hr);
-            const trail_text = document_createBoldNode("Trail");
+            const trail_text = document_createBoldNode(firework_properties_names['trail']);
             const row = getCustomRow([trail_text]);
             container.append(row);
         }
         {
             const hr = document.createElement('hr');
             container.append(hr);
-            const row = this.getCustomPropertyRow(data,'color','Trail color','color',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'color',trail_properties_names['color'],'color',depth,disabled,getTooltip('trail_color'));
             container.append(row);
         }
         {
             const hr = document.createElement('hr');
             container.append(hr);
-            const row = this.getCustomPropertyRow(data,'radius','Trail radius','number',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'radius',trail_properties_names['radius'],'number',depth,disabled,getTooltip('trail_radius'));
             container.append(row);
         }
         {
             const hr = document.createElement('hr');
             container.append(hr);
-            const row = this.getCustomPropertyRow(data,'dispersion','Trail dispersion','number',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'lifespan',trail_properties_names['lifespan'],'number',depth,disabled,getTooltip('trail_lifespan'));
             container.append(row);
         }
         {
             const hr = document.createElement('hr');
             container.append(hr);
-            const row = this.getCustomPropertyRow(data,'amount','Trail amount','integer',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'amount',trail_properties_names['amount'],'integer',depth,disabled,getTooltip('trail_amount'));
             container.append(row);
         }
         {
             const hr = document.createElement('hr');
             container.append(hr);
-            const row = this.getCustomPropertyRow(data,'delay','Trail delay','number',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'dispersion',trail_properties_names['dispersion'],'number',depth,disabled,getTooltip('trail_dispersion'));
+            container.append(row);
+        }
+        {
+            const hr = document.createElement('hr');
+            container.append(hr);
+            const row = this.getCustomPropertyRow(data,'delay',trail_properties_names['delay'],'number',depth,disabled,getTooltip('trail_delay'));
             container.append(row);
         }
         {
@@ -1619,7 +1782,7 @@ class TemplateEditor{
             use_duration_limit_label.appendChild(use_duration_limit_tickbox);
             // Set duration limit
             
-            const row_label = document_createBoldNode("Trail duration");
+            const row_label = document_createBoldNode(trail_properties_names['duration']);
             
             if(data['duration']===null){
                 const row = disabled ? getCustomRow([row_label,document.createTextNode("No duration limit")],[0.2,0.8])
@@ -1633,10 +1796,10 @@ class TemplateEditor{
                     const input = getInputElement("text", data['duration'], disabled, updateFieldFromInput(data,'duration',(x)=>{return x}), "firework_template_trail_duration_custom_"+depth.join('_'));
                     input.classList.add("formula");
                     return input;
-                })();
+                });
                 const get_formula_row = ()=>{
-                    return disabled ? getCustomRow([row_label,row_custom_input],[0.2,0.8])
-                                    : getCustomRow([row_label,row_custom_input,use_duration_limit_label],[0.2,0.6,0.2]);
+                    return disabled ? getCustomRow([row_label,row_custom_input()],[0.2,0.8])
+                                    : getCustomRow([row_label,row_custom_input(),use_duration_limit_label],[0.2,0.6,0.2]);
                 }
                 if(is_custom){
                     container.append(get_formula_row());
@@ -1670,13 +1833,13 @@ class TemplateEditor{
         {
             const hr = document.createElement('hr');
             container.append(hr);
-            const row = this.getCustomPropertyRow(data,'smoke_color','Smoke color','color',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'smoke_color',firework_properties_names['smoke_color'],'color',depth,disabled);
             container.append(row);
         }
         {
             const hr = document.createElement('hr');
             container.append(hr);
-            const row = this.getCustomPropertyRow(data,'smoke_lifespan','Smoke lifespan','number',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'smoke_lifespan',firework_properties_names['smoke_lifespan'],'number',depth,disabled);
             container.append(row);
         }
     }
@@ -1712,7 +1875,9 @@ class TemplateEditor{
         { // Shape
             const shape_div = document.createElement("div");
             const shape_label = document.createElement("label");
-            const shape_label_text = document_createBoldNode("Shape: ");
+            const shape_label_text = document_createBoldNode("Shape");
+            shape_label_text.appendChild(getTooltip("shape"));
+            shape_label_text.appendChild(document.createTextNode(": "));
             shape_label.appendChild(shape_label_text);
             const element = getInputElement("shape",data.shape, disabled, disabled ? null : updateFieldFromInput(data, 'shape', (x)=>{return x}), "firework_template_shape_"+depth.join('_'));
             shape_label.appendChild(element);
@@ -1722,7 +1887,9 @@ class TemplateEditor{
         { // Use trail
             const use_trail_div = document.createElement("div");
             const use_trail_label = document.createElement("label");
-            const use_trail_text = document_createBoldNode("Use trail? ");
+            const use_trail_text = document_createBoldNode("Use trail");
+            use_trail_text.appendChild(getTooltip("trail"));
+            use_trail_text.appendChild(document.createTextNode("? "));
             use_trail_label.appendChild(use_trail_text);
             const element = getInputElement("bool",(data.trail!==null).toString(), disabled, disabled ? null : (e)=>{data.trail = (data.trail===null) ? Template.getTrailTemplate([...data.bit_color]) : null; trail_properties_div.innerHTML=""; this.fillTrailDataRows(data.trail, depth, disabled, trail_properties_div)}, "firework_template_use_trail_input"+depth.join('_'));
             use_trail_label.appendChild(element);
@@ -1765,25 +1932,25 @@ class TemplateEditor{
         {
             const hr = document.createElement('hr');
             firework_properties_div.append(hr);
-            const row = this.getCustomPropertyRow(data,'bit_color','Bit color','color',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'bit_color',firework_properties_names['bit_color'],'color',depth,disabled,getTooltip("head_color"));
             firework_properties_div.append(row);
         }
         {
             const hr = document.createElement('hr');
             firework_properties_div.append(hr);
-            const row = this.getCustomPropertyRow(data,'duration','Duration','number',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'nb_bits',firework_properties_names['nb_bits'],'integer',depth,disabled,getTooltip("nb_bits"));
             firework_properties_div.append(row);
         }
         {
             const hr = document.createElement('hr');
             firework_properties_div.append(hr);
-            const row = this.getCustomPropertyRow(data,'nb_bits','Nb bits','integer',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'duration',firework_properties_names['duration'],'number',depth,disabled,getTooltip("fragment_lifespan"));
             firework_properties_div.append(row);
         }
         {
             const hr = document.createElement('hr');
             firework_properties_div.append(hr);
-            const row = this.getCustomPropertyRow(data,'projection_speed','Projection speed','number',depth,disabled);
+            const row = this.getCustomPropertyRow(data,'projection_speed',firework_properties_names['projection_speed'],'number',depth,disabled,getTooltip("projection_speed"));
             firework_properties_div.append(row);
         }
         this.fillSmokeDataRows(data, depth, disabled, smoke_properties_div);
@@ -1800,9 +1967,14 @@ class TemplateEditor{
             add_cascade_button.classList.add('wide');
             add_cascade_button.classList.add('add_content_button');
             add_cascade_button.disabled = disabled;
-            add_cascade_button.onclick = ()=>{const cascade_data = Template.getFireworkTemplate(); const cascade_div = this.getFireworkDataDiv(cascade_data, depth.concat([data.cascades.length]), disabled); data.cascades.push(cascade_data);firework_cascades_div.appendChild(cascade_div);};
+            const onclick_function = ()=>{const cascade_data = Template.getFireworkTemplate(); const cascade_div = this.getFireworkDataDiv(cascade_data, depth.concat([data.cascades.length]), disabled); data.cascades.push(cascade_data);firework_cascades_div.appendChild(cascade_div);};
+            add_cascade_button.onclick = onclick_function;
             const add_cascade_text = document.createTextNode("Add new cascade");
             add_cascade_button.appendChild(add_cascade_text);
+            const tooltip = getTooltip("cascade");
+            tooltip.addEventListener("mouseenter", (event) => {add_cascade_button.onclick = ()=>{};});
+            tooltip.addEventListener("mouseleave", (event) => {add_cascade_button.onclick = onclick_function;});
+            add_cascade_button.appendChild(tooltip);
             firework_content_div.appendChild(add_cascade_button);
         }
         
@@ -1875,54 +2047,39 @@ export class EnvEditor{
         this.editor_div.appendChild(sequence_div);
         this.editor_div.appendChild(templates_div);
         {
-            const p = document.createElement("p");
-            const small = document.createElement("small");
-            const textNode = document.createTextNode("Enter: play sequence");
-            small.appendChild(textNode);
-            p.appendChild(small);
-            this.editor_div.appendChild(p);
-        }
-        {
-            const p = document.createElement("p");
-            const small = document.createElement("small");
-            const textNode = document.createTextNode("Click on the board to preview the selected template.");
-            small.appendChild(textNode);
-            p.appendChild(small);
-            this.editor_div.appendChild(p);
-        }
-        {
-            const p = document.createElement("p");
-            const small = document.createElement("small");
-            const i = document.createElement("i");
-            const textNode = document.createTextNode("Documentation about the editor will soon be available ");
             const a = document.createElement("a");
-            const linkTextNode = document.createTextNode("here");
-            a.appendChild(linkTextNode);
-            a.href="./documentation"
-            const endTextNode = document.createTextNode(".");
-            i.appendChild(textNode);
-            i.appendChild(a);
-            i.appendChild(endTextNode);
-            small.appendChild(i);
-            p.appendChild(small);
-            this.editor_div.appendChild(p);
+            a.href = "/documentation";
+            a.classList.add("content_div");
+            a.classList.add("a_button");
+            a.classList.add("documentation");
+            a.addEventListener('click', (e)=>{if (!window.confirm('Leave this page? All unsaved progress will be lost.')) e.preventDefault();}, false);
+            const a_text =  document.createTextNode("➲ All the documentation is available here ➲");
+            a.appendChild(a_text);
+            this.editor_div.appendChild(a);
         }
         
         {
             const display_editor_div = document.createElement("div");
             display_editor_div.classList.add('display_editor_div');
             this.display_editor_div = display_editor_div;
-            /*
-            const intro_p = document.createElement("p");
-            const intro_text = document.createTextNode("Click on the board to create beautiful fireworks!");
-            intro_p.appendChild(intro_text);
-            this.display_editor_div.appendChild(intro_p);
-            */
+            
+            { // Intro
+                const font = "1em "+'"Rubik", sans-serif';
+                this.env.writeText("Click on the board to create beautiful fireworks!",new Point(0.,50.),5.,font,new Color(1,1,1),[0.,2.]);
+            }
+            
             const display_editor_button = document.createElement("button");
             display_editor_button.classList.add('wide');
+            display_editor_button.classList.add('big_button');
             display_editor_button.onclick = ()=>{this.show();}
             const display_editor_text = document.createTextNode("Display editor");
             display_editor_button.appendChild(display_editor_text);
+            
+            const tooltip = document_createTooltip(document.createTextNode("With the editor, you can create your own firework sequences and templates!"));
+            tooltip.addEventListener("mouseenter", (event) => {display_editor_button.onclick = ()=>{};});
+            tooltip.addEventListener("mouseleave", (event) => {display_editor_button.onclick = ()=>{this.show();};});
+            display_editor_button.appendChild(tooltip);
+            
             this.display_editor_div.appendChild(display_editor_button);
             
             this.container.appendChild(this.display_editor_div);
@@ -1956,7 +2113,6 @@ export class EnvEditor{
         
     get_update_dims(){
         return (width, height)=>{
-            this.container.style['margin-top'] = "calc("+height.toString() + "px + 2em)";
             this.container.style.width = Math.round(this.env.resize_function(this.env.pixels_scale)[0]*this.env.pixels_scale).toString()+"px";
         }
     }

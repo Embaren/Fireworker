@@ -5,8 +5,8 @@ const BitType = {
   trail: 1,
 };
 
-const FireworkShapesReverse = ["circle", "disk", "directional", "star4", "star5", "heart"];
-//spiral: 5,
+const FireworkShapesReverse = ["circle", "disk", "star4", "star5", "heart","square","spiral1L","spiral2L","spiral3L","spiral4L","spiral1R","spiral2R","spiral3R","spiral4R"];
+
 const FireworkShapes = {}
 for (let i=0 ; i<FireworkShapesReverse.length ; i++){
     FireworkShapes[FireworkShapesReverse[i]]=i;
@@ -41,6 +41,10 @@ class Trail{
 function getStarDistFun(nb_points){
     return(x)=>(1.-Math.abs((x*nb_points/Math.PI)%2-1.)/2.);
 }
+function getSpiralDistFun(nb_branches,dir='L'){
+    const mod = 2*Math.PI/nb_branches;
+    return(x)=>(((x/mod) % 1)-(dir=='R'?1:0));
+}
 
 function getDistFun(shape_type = FireworkShapes.circle){
     switch(shape_type){
@@ -63,6 +67,24 @@ function getDistFun(shape_type = FireworkShapes.circle){
         return (x)=>(Math.sin(Math.abs((x % (2*Math.PI))-Math.PI))/2+Math.sin(Math.abs((x % (2*Math.PI))-Math.PI)/2)*Math.pow(Math.abs((x % (2*Math.PI))-Math.PI)/Math.PI,6)+.5);
         //return (x)=>(Math.pow((Math.exp(-Math.pow(Math.abs((x % (2*Math.PI))-Math.PI)-Math.PI/3,2))+Math.exp(Math.pow(Math.abs((x % (2*Math.PI))-Math.PI)-Math.PI/12,2)/12))/2,1.2));
         break;
+    case(FireworkShapes["spiral1L"]):
+        return getSpiralDistFun(1,"L");
+    case(FireworkShapes["spiral2L"]):
+        return getSpiralDistFun(2,"L");
+    case(FireworkShapes["spiral3L"]):
+        return getSpiralDistFun(3,"L");
+    case(FireworkShapes["spiral4L"]):
+        return getSpiralDistFun(4,"L");
+    case(FireworkShapes["spiral1R"]):
+        return getSpiralDistFun(1,"R");
+    case(FireworkShapes["spiral2R"]):
+        return getSpiralDistFun(2,"R");
+    case(FireworkShapes["spiral3R"]):
+        return getSpiralDistFun(3,"R");
+    case(FireworkShapes["spiral4R"]):
+        return getSpiralDistFun(4,"R");
+    case(FireworkShapes["square"]):
+        return (x)=>(Math.sqrt(1+2*(x/(Math.PI/2) % 1.)*((x/(Math.PI/2) % 1.)-1)));
     default:
         console.log("Invalid firework shape: not implemented yet. Default: circle");
         return (x)=>(1.);            
@@ -361,7 +383,7 @@ export class Emitter{
 }
 
 export class Template{
-    constructor(name, emitter, variables={}, env = null){
+    constructor(name, emitter, variables=[], env = null){
         this.name = name;
         this.env = env;
         this.variables = variables;
@@ -398,7 +420,7 @@ export class Template{
             }
     };
     
-    static getFireworkTemplate(bit_color=[1,1,1,1], duration=1, nb_bits=1, projection_speed=0, shape='circle', smoke=null, trail=null, cascades=[]){
+    static getFireworkTemplate(bit_color=[1,1,1,1], duration=2.5, nb_bits=7, projection_speed=10, shape='circle', smoke=null, trail=null, cascades=[]){
         
         smoke = smoke ? smoke : Template.getDefaultSmoke();
         
@@ -414,6 +436,14 @@ export class Template{
                 "cascades": cascades
             }
     };
+    
+    static getEmitterTemplate(duration=0,use_rocket=true,firework_data=null){
+        return {
+            "duration":duration=0,
+            "use_rocket":true,
+            "firework": firework_data ? firework_data : Template.getFireworkTemplate()
+            }
+    }
     
     static getDefaultSmoke(){
         return {
@@ -471,7 +501,9 @@ export class Template{
         }
         
         emitter_data.variables = this.copy().variables;
-        emitter_data.variables.unshift(["FRAMERATE",this.env.framerate]);
+        if(this.env){
+            emitter_data.variables.unshift(["FRAMERATE",this.env.framerate]);
+        }
         emitter_data.template_data = this.copy().toJSON().emitter;
         
         const emitter = Emitter.fromJSON(emitter_data);

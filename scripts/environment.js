@@ -1,4 +1,4 @@
-import {Point, downloadJSON} from "/scripts/utils.js";
+import {Point, Color, downloadJSON} from "/scripts/utils.js";
 import {Emitter} from "/scripts/fireworks.js";
 
 export class EmitterGroup{
@@ -39,6 +39,36 @@ export class EmitterGroup{
     }
 }
 
+class Text{
+    constructor(content,pos,duration,font,color=new Color(1,1,1),fade=[0.,0.]){
+        this.content = content;
+        this.pos = pos;
+        this.color = color;
+        this.duration = duration;
+        this.font = font;
+        this.progress = 0;
+        this.fade = fade;
+    }
+    update(framerate){
+        this.progress = this.progress+1/framerate;
+        return this.progress<this.duration;
+    }
+    display(ctx){
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        const color = this.color.copy();
+        if(this.progress<this.fade[0]){
+            color.a = color.a*this.progress/this.fade[0];
+        }
+        if((this.duration-this.progress)<this.fade[1]){
+            color.a = color.a*(this.duration-this.progress)/this.fade[1];
+        }
+        ctx.fillStyle = color.html();
+        ctx.font = this.font;
+        ctx.fillText(this.content, this.pos.x, this.pos.y);
+    }
+}
+
 export class Environment{
     constructor(canvas_id, create_canvas_group = false, framerate = 12, dampen = .95, gravity = new Point(.01,-.1), pixels_scale = 1, resize_function = null){
         
@@ -56,10 +86,6 @@ export class Environment{
             
             this.canvas_group.appendChild(this.background_canvas);
             this.canvas_group.appendChild(this.game_canvas);
-            /*
-            this.canvas = document.createElement('canvas');
-            this.canvas.id = canvas_id;
-            */
         }
         else{
             this.canvas_group = document.getElementById(canvas_id);
@@ -79,6 +105,8 @@ export class Environment{
         this.fireworks = [];
         this.step_functions = [];
         
+        this.texts = [];
+        
         this.resize_function = resize_function;
         
         if(this.resize_function !== null){
@@ -86,11 +114,18 @@ export class Environment{
             this.updateCanvasDims(size[0], size[1]);
         }
     }
+    
+    writeText(content,pos,duration,font,color = new Color(1.,1.,1.), fade=[0.,0.]){
+        const new_pos = pos.copy();
+        new_pos.y = -new_pos.y;
+        this.texts.push(new Text(content,new_pos,duration,font,color,fade));
+    }
+    
     updateCanvasDims(width, height){
         const component_width = Math.round(width*this.pixels_scale);
         const component_height = Math.round(height*this.pixels_scale);
         this.canvas_group.style.width = component_width.toString()+"px";
-        this.canvas_group.height = component_height.toString()+"px";
+        this.canvas_group.style.height = component_height.toString()+"px";
 
         for(const canvas of [this.game_canvas,this.background_canvas]){
         
@@ -116,13 +151,12 @@ export class Environment{
                 this.emitters.push(copy);
             }
         }
-        //for(let i = 0 ; i < this.planned_emitters.length ; i++){
-        //    this.emitters.push(this.planned_emitters[i].copy());
-        //}
     }
     play(){
-        this.play_status = true;
-        this.step();
+        if(!this.play_status){
+            this.play_status = true;
+            this.step();
+        }
         //this.canvas.addEventListener('mousedown', this.onclick);
     }
     pause(){
@@ -192,6 +226,20 @@ export class Environment{
             this.fireworks.splice(i,1);
             i = i-1;
           }
+        }
+        
+        if(this.texts.length>0){
+            this.ctx.save();
+            this.ctx.scale(1, -1);
+            for(let i = 0 ; i < this.texts.length ; i ++){
+              this.texts[i].display(this.ctx);
+              const alive = this.texts[i].update(this.framerate);
+              if(!alive){
+                this.texts.splice(i,1);
+                i = i-1;
+              }
+            }
+            this.ctx.restore();
         }
         
         for(let i = 0 ; i < this.step_functions.length ; i++){

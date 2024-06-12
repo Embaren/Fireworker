@@ -50,14 +50,17 @@ button{
     font-weight: bold;
 }
 button:disabled{
-    opacity: .25;
+    background: color-mix(in srgb, white 25%, transparent);
+    opacity: 1;
 }
 button:hover{
     background-color: lavender;
 }
-button:disabled:hover{
-    background: white;
-    opacity: .25;
+.big_button{
+    font-size: 1.17em;
+    border: solid white;
+    padding-top: 0.34em;
+    padding-bottom: 0.34em;
 }
 .icon_button{
     font-family: "Noto Sans Symbols 2";
@@ -108,9 +111,29 @@ table, th, td {
     border-color: white;
 }
 
+a{
+    color:lightskyblue;
+}
+.a_button{
+    color: inherit;
+    text-decoration: inherit;
+    padding-right: 1em;
+    padding-left: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+}
+
+
 #path_div{
     display:flex;
     align-self:flex-start;
+}
+#controlDiv{
+    margin-top:1.5em;
 }
 #path_div a{
     color: inherit;
@@ -187,6 +210,43 @@ table, th, td {
 .variables button:hover{
     background-color:ivory;
 }
+.sequence{
+    background-color: Salmon;
+}
+.sequence button{
+    color: Salmon;
+    border: solid white;
+}
+.sequence button:hover{
+    background-color:LightSalmon;
+}
+.demo{
+    border: solid white;
+    border-radius : 10px;
+}
+.demo button{
+    border-radius : 0;
+}
+.demo div canvas{
+    border-top: solid white;
+    border-left: solid white;
+    border-right: solid white;
+    border-top-left-radius : 10px;
+    border-top-right-radius : 10px;
+    margin-top : -2.5px;
+    margin-left : -2.5px;
+    margin-right : -2.5px;
+}
+button:disabled:hover{
+    background: color-mix(in srgb, white 25%, transparent);
+    opacity: 1;
+}
+@-moz-document url-prefix(){
+    .demo div canvas {
+        margin-left : -3px;
+        margin-right : -3px;
+    }
+}
 .content_div:has(.add_content_button) {
     padding-bottom : 0;
 }
@@ -232,32 +292,6 @@ table, th, td {
 
 .display_editor_div p{
     margin-top: 0px;
-}
-
-.display_editor_div button{
-    color: white;
-    border: solid white;
-    border-radius: 10px;
-    background: transparent;
-    font-size: 1.17em;
-    padding-top: 0.34em;
-    padding-bottom: 0.34em;
-}
-.display_editor_div button:hover{
-    background-color: #3e3769;
-}
-
-.create_group_button{
-    color: white;
-    border: solid white;
-    border-radius: 10px;
-    background: transparent;
-    font-size: 1.17em;
-    padding-top: 0.34em;
-    padding-bottom: 0.34em;
-}
-.create_group_button:hover{
-    background-color: #3e3769;
 }
 
 input[type="text"],input[type="number"] {
@@ -369,6 +403,43 @@ input[type="number"][min="0"] {
 
 .tooltip:hover span{
   visibility: visible;
+}
+.tooltip p{
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+.tooltip_demo {
+    width:100%;
+    display:flex;
+    justify-content: center;
+}
+.fireworker .tooltip_demo .demo{
+    background-color:DarkSlateBlue;
+}
+.firework .tooltip_demo .demo{
+    background-color:palevioletred;
+}
+.variables .tooltip_demo .demo{
+    background-color:teal;
+}
+.emitter .tooltip_demo .demo{
+    background-color:DarkSalmon;
+}
+.sequence .tooltip_demo .demo{
+    background-color:Salmon;
+}
+.documentation .tooltip_demo .demo{
+    background-color:DarkGoldenRod;
+}
+.group .tooltip_demo .demo button{
+    border-color:white;
+}
+.group .tooltip_demo .demo{
+    background-color:DarkSlateBlue;
+}
+.selected_group .tooltip_demo .demo{
+    background-color:MediumPurple;
 }
 
 #panel{
