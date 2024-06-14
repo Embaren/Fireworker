@@ -25,29 +25,29 @@ function get_shape_symbol(shape){
 
 const emitter_properties_names = {
     "emitter_name": "Name",
-    "origin": "Origin [x]",
-    "target": "Target [x,y]",
-    "emitter_duration": "Emitter duration",
-    "rocket_time": "Rocket time",
-    "emitter_delay": "Delay",
+    "origin": "Origin [x] (px)",
+    "target": "Target [x,y] (px)",
+    "emitter_duration": "Emitter duration (s)",
+    "rocket_time": "Rocket time (s)",
+    "emitter_delay": "Delay (s)",
 }
 const firework_properties_names = {
     "bit_color": "Fragment head color",
     "nb_bits": "Nb fragments",
-    "duration": "Fragment lifespan",
-    "smoke_lifespan": "Smoke lifespan",
+    "duration": "Fragment lifespan (s)",
+    "smoke_lifespan": "Smoke lifespan (s)",
     "smoke_color": "Smoke color",
-    "projection_speed": "Projection speed",
+    "projection_speed": "Projection speed (px/s)",
     "trail": "Trail"
 }
 const trail_properties_names = {
     "color": "Trail particles color",
-    "radius": "Trail particles radius",
-    "lifespan": "Trail particles lifespan",
-    "dispersion": "Trail dispersion",
+    "radius": "Trail particles radius (px)",
+    "lifespan": "Trail particles lifespan (s)",
+    "dispersion": "Trail dispersion (px)",
     "amount": "Trail particles amount",
-    "delay": "Trail delay",
-    "duration": "Trail duration"
+    "delay": "Trail delay (s)",
+    "duration": "Trail max duration (s)"
 }
 
 function isCustomProperty(property,type){
@@ -265,8 +265,6 @@ class CoordEditor{
         this.on_deactivate();
         this.on_deactivate = ()=>{};
     }
-    
-    
     
     updateFromInput(emitter,type,post_fun=()=>{}){
         return (button, text=undefined)=>{
@@ -799,7 +797,7 @@ class SequenceEditor{
             template_selector.appendChild(option);
         }
         template_selector.value = this.template_manager.selected_template;
-        template_selector.addEventListener("input", ()=>{this.template_manager.selected_template=template_selector.value;});
+        template_selector.addEventListener("input", ()=>{this.template_manager.selected_template=template_selector.value; this.coordEditor.deactivate();});
         
 
         const selector_button = document.createElement("button");
@@ -817,14 +815,14 @@ class SequenceEditor{
                 const cell_text = document.createTextNode("Add emitter");
                 selector_button.appendChild(cell_text);
                 selector_button.onclick = ()=>{
-                    { // Text
-                        const font = "1em "+'"Rubik", sans-serif';
-                        this.env.writeText("Click on the board to create the emitter",new Point(0.,50.),2.,font,new Color(1,1,1),[1.,1.]);
-                    }
                     template_selector.disabled = true;
                     const origin = new Point((Math.random()-.5)*this.env.game_canvas.width/2,0.);
                     try{
                         const emitter = this.template_manager.getSelected().getEmitter(origin,origin);
+                        if(this.coordEditor.active!==selector_button){ // Text
+                            const font = "1em "+'"Rubik", sans-serif';
+                            this.env.writeText("Click on the board to add the emitter.",new Point(0.,50.),2.,font,new Color(1,1,1),[1.,1.]);
+                        }
                         this.coordEditor.updateFromInput(emitter, 'sync',()=>{
                             const j = this.env.planned_groups[this.selected_group].length;
                             this.env.planned_groups[this.selected_group].push(emitter);

@@ -37,16 +37,21 @@ mainDiv.appendChild(docDiv);
         p.appendChild(p_text)
         docContentDiv.appendChild(p);
     }
-    {
-        const p = document.createElement("p");
-        const str = "";
-        const p_text = document.createTextNode(str);
-        p.appendChild(p_text)
-        docContentDiv.appendChild(p);
-    }
-    
     docDiv.appendChild(docContentDiv);
 }
+
+{
+    const a = document.createElement("a");
+    a.href = "/resources/examples_sequence/DemoSequence.fsequence";
+    a.download = "DemoSequence.fsequence"
+    a.classList.add("content_div");
+    a.classList.add("a_button");
+    a.classList.add("documentation");
+    const a_text =  document.createTextNode("🡇 Download demo sequence file 🡇");
+    a.appendChild(a_text);
+    docDiv.appendChild(a);
+}
+    
 { // Groups
     const docContentDiv = document.createElement("div");
     docContentDiv.classList.add("content_div");
@@ -80,4 +85,16 @@ mainDiv.appendChild(docDiv);
     }
     
     docDiv.appendChild(docContentDiv);
+}
+
+{
+    const a = document.createElement("a");
+    a.href = "/resources/examples_sequence/Opening.fgroup";
+    a.download = "Opening.fgroup"
+    a.classList.add("content_div");
+    a.classList.add("a_button");
+    a.classList.add("documentation");
+    const a_text =  document.createTextNode("🡇 Download demo group file 🡇");
+    a.appendChild(a_text);
+    docDiv.appendChild(a);
 }

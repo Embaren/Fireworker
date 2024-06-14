@@ -194,7 +194,7 @@ mainDiv.appendChild(docDiv);
 }
 { // Trail parameters
     const h3_trail_parameters = document.createElement("h3");
-    h3_trail_parameters.appendChild(document.createTextNode("Charge parameters"));
+    h3_trail_parameters.appendChild(document.createTextNode("Trail parameters"));
     docDiv.appendChild(h3_trail_parameters);
     
     docDiv.appendChild(getParametersTable(["trail_color","trail_lifespan","trail_radius","trail_amount","trail_dispersion","trail_delay","trail_duration"],"firework"));

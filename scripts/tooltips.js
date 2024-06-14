@@ -14,7 +14,7 @@ const parametersDoc = {
         }
     },
     "emitter_duration": {
-        "name": "Emitter duration",
+        "name": "Emitter duration (s)",
         "description": "The emitter duration defines an instantaneous (when equals to 0) or a continuous (when greater than 0) emission.",
         "demo": {
             "names":["Instantaneous (duration=0s)","Continuous (duration=1s)"],
@@ -22,7 +22,7 @@ const parametersDoc = {
         }
     },
     "fragment_lifespan": {
-        "name": "Cascade",
+        "name": "Fragment lifespan (s)",
         "description": "The fragments have a lifespan before decaying, corresponding to the duration of the firework.",
         "demo": {
             "names":["Red fragments","White fragments"],
@@ -31,7 +31,7 @@ const parametersDoc = {
     },
     "head_color": {
         "name": "Head color",
-        "description":"Corresponds to the color of the fragments projected.",
+        "description":"The color of the projected fragments. Can be different from the trail color.",
         "demo": {
             "names":["Red fragments","White fragments"],
             "sources":["Demo Bare", "Demo White"]
@@ -46,8 +46,8 @@ const parametersDoc = {
         }
     },
     "projection_speed": {
-        "name": "Fragment projecrion speed",
-        "description": "The higher the projection speed, the bigger the firework.",
+        "name": "Fragment projection speed (px/s)",
+        "description": "The higher the projection speed, the bigger the firework!",
         "demo": {
             "names":["Large charge","Small charge"],
             "sources":["Demo Bare", "Demo Small"]
@@ -62,7 +62,7 @@ const parametersDoc = {
         }
     },
     "rocket_time": {
-        "name": "Rocket time",
+        "name": "Rocket time (s)",
         "description": "A rocket brings the charge at the target position for it to explode. In absence of a rocket, the emitter will ignite the charge from the origin, with an initial velocity.",
         "demo": {
             "names":["No rocket","Rocket"],
@@ -79,7 +79,7 @@ const parametersDoc = {
     },
     "trail": {
         "name": "Trail",
-        "description": "Trails are particles that are left behind a fragment's head.",
+        "description": "Trails are particles that are left behind a fragment's head. More details in the 'Trail' documentation section.",
         "demo": {
             "names":["No trail","Green trail"],
             "sources":["Demo Bare", "Demo Trail"]
@@ -102,7 +102,7 @@ const parametersDoc = {
         }
     },
     "trail_delay": {
-        "name": "Trail delay",
+        "name": "Trail delay (s)",
         "description": "How long before the fragment starts to emits its trail.",
         "demo": {
             "names":["Instant trail (delay=0s)","Late trail (delay=1s)"],
@@ -110,15 +110,15 @@ const parametersDoc = {
         }
     },
     "trail_duration": {
-        "name": "Trail maximum duration",
+        "name": "Trail maximum duration (s)",
         "description": "Maximum duration of emission of a trail.",
         "demo": {
-            "names":["Trail with no duration limit","Trail stoppint early"],
+            "names":["Trail with no duration limit","Trail stopping early"],
             "sources":["Demo Trail", "Demo Trail Early"]
         }
     },
     "trail_dispersion": {
-        "name": "Trail particles dispersion",
+        "name": "Trail particles dispersion (px)",
         "description": "The trail particles are generated at each frame around the fragment's head, inside a dispersion radius.",
         "demo": {
             "names":["Narrow trail","Wide trail"],
@@ -126,7 +126,7 @@ const parametersDoc = {
         }
     },
     "trail_lifespan": {
-        "name": "Trail particles lifespan",
+        "name": "Trail particles lifespan (s)",
         "description": "Each trail particle remains static at its spawning location for a duration equal to its lifespan.",
         "demo": {
             "names":["Long trail particles","Short trail particles"],
@@ -134,7 +134,7 @@ const parametersDoc = {
         }
     },
     "trail_radius": {
-        "name": "Trail particles radius",
+        "name": "Trail particles radius (px)",
         "description": "A trail particle is represented by a circle of a specified radius.",
         "demo": {
             "names":["Small trail particles","Large trail particles"],
