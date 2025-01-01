@@ -1,0 +1,86 @@
+{
+    "name": "Bundle",
+    "variables": [["ROCKET_G", "0.1 RANDOM +"], ["ROCKET_B", "RANDOM 0.75 *"], ["ROCKET_R", "RANDOM ROCKET_B ROCKET_G MIN *"], ["ROCKET_NORM", "ROCKET_R ROCKET_G ROCKET_B NORM3D"], ["FLOWER_R", "RANDOM"], ["FLOWER_G", "RANDOM"], ["FLOWER_B", "RANDOM"], ["FLOWER_NORM", "FLOWER_R FLOWER_G FLOWER_B NORM3D"], ["FLOWER_R_VAR", "RANDOM .5 - .5 * 1 + FLOWER_R *"], ["FLOWER_G_VAR", "RANDOM .5 - .5 * 1 + FLOWER_G *"], ["FLOWER_B_VAR", "RANDOM .5 - .5 * 1 + FLOWER_B *"], ["FLOWER_NORM_VAR", "FLOWER_R_VAR FLOWER_G_VAR FLOWER_B_VAR NORM3D"]],
+    "emitter": {
+        "duration": "0",
+        "use_rocket": false,
+        "firework": {
+            "bit_color": ["ROCKET_R ROCKET_NORM /", "ROCKET_G ROCKET_NORM /", "ROCKET_B ROCKET_NORM /", 0.5],
+            "duration": "0.25 RANDOM 2 / +",
+            "nb_bits": "1",
+            "projection_speed": "0",
+            "shape": "circle",
+            "smoke_color": ["ROCKET_R ROCKET_NORM /", "ROCKET_G ROCKET_NORM /", "ROCKET_B ROCKET_NORM /", 0.05],
+            "smoke_lifespan": 0.75,
+            "trail": {
+                "color": ["FROM_BIT", "FROM_BIT", "FROM_BIT", "0.2"],
+                "radius": 1,
+                "lifespan": 0.75,
+                "dispersion": 5,
+                "amount": 3,
+                "delay": "1 FRAMERATE /",
+                "duration": null
+            },
+            "cascades": [{
+                    "bit_color": ["ROCKET_R ROCKET_NORM /", "ROCKET_G ROCKET_NORM /", "ROCKET_B ROCKET_NORM /", "0.5"],
+                    "duration": "1 RANDOM 1 * +",
+                    "nb_bits": "RANDOM 1 * 1 +",
+                    "projection_speed": "50 RANDOM 25 * +",
+                    "shape": "spiral1L",
+                    "smoke_color": ["ROCKET_R ROCKET_NORM /", "ROCKET_G ROCKET_NORM /", "ROCKET_B ROCKET_NORM /", "0.025"],
+                    "smoke_lifespan": 0.75,
+                    "trail": {
+                        "color": ["FROM_BIT", "FROM_BIT", "FROM_BIT", "0.2"],
+                        "radius": 1,
+                        "lifespan": 0.75,
+                        "dispersion": 4,
+                        "amount": 2,
+                        "delay": 0,
+                        "duration": null
+                    },
+                    "cascades": [{
+                            "bit_color": ["FLOWER_R FLOWER_NORM /", "FLOWER_G FLOWER_NORM /", "FLOWER_B FLOWER_NORM /", 1],
+                            "duration": 2.5,
+                            "nb_bits": "9 RANDOM 9 * +",
+                            "projection_speed": "15 RANDOM 30 * +",
+                            "shape": "circle",
+                            "smoke_color": [0.2, 0.2, 0.2, 0.1],
+                            "smoke_lifespan": 1,
+                            "trail": null,
+                            "cascades": []
+                        }
+                    ]
+                }, {
+                    "bit_color": ["ROCKET_R ROCKET_NORM /", "ROCKET_G ROCKET_NORM /", "ROCKET_B ROCKET_NORM /", "0.5"],
+                    "duration": "1 RANDOM 1 * +",
+                    "nb_bits": "RANDOM 1 * 1 +",
+                    "projection_speed": "50 RANDOM 25 * +",
+                    "shape": "spiral1L",
+                    "smoke_color": ["ROCKET_R ROCKET_NORM /", "ROCKET_G ROCKET_NORM /", "ROCKET_B ROCKET_NORM /", "0.025"],
+                    "smoke_lifespan": 0.75,
+                    "trail": {
+                        "color": ["FROM_BIT", "FROM_BIT", "FROM_BIT", "0.2"],
+                        "radius": 1,
+                        "lifespan": 0.75,
+                        "dispersion": 4,
+                        "amount": 2,
+                        "delay": 0,
+                        "duration": null
+                    },
+                    "cascades": [{
+                            "bit_color": ["FLOWER_R_VAR FLOWER_NORM_VAR /", "FLOWER_G_VAR FLOWER_NORM_VAR /", "FLOWER_B_VAR FLOWER_NORM_VAR /", 1],
+                            "duration": 2.5,
+                            "nb_bits": "9 RANDOM 9 * +",
+                            "projection_speed": "15 RANDOM 30 * +",
+                            "shape": "circle",
+                            "smoke_color": [0.2, 0.2, 0.2, 0.1],
+                            "smoke_lifespan": 1,
+                            "trail": null,
+                            "cascades": []
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
