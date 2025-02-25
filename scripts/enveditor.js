@@ -301,7 +301,7 @@ class CoordEditor{
 }
 
 function updateColorFromInput(object,field){
-    return {
+    return{
         'color': function(input){
             return function(e){
                 object[field].fromHTML(input.value);
@@ -311,9 +311,11 @@ function updateColorFromInput(object,field){
             return function(e){
                 object[field].a = parseFloat(input.value)/255;
             }
-        }}
-}function updateColorListFromInput(object,field){
-    return {
+        }
+	}
+}
+function updateColorListFromInput(object,field){
+    return{
         'color': function(input){
             return function(e){
                 const color = Color.fromList(object[field]);
@@ -325,7 +327,8 @@ function updateColorFromInput(object,field){
             return function(e){
                 object[field][3] = parseFloat(input.value)/255;
             }
-        }}
+        }
+	}
 }
 
 function updateFieldFromInput(object,field,value_fun,post_fun=()=>{}){
