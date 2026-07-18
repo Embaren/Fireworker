@@ -33,7 +33,6 @@ function getParametersTable(tags,theme){
         const name = document_createBoldNode(parameterDoc.name);
         const description = document.createTextNode(parameterDoc.description);
         const demo = parameterDoc.demo_element;
-        //const row = getCustomRow([name,description,demo], [0.2, 0.6, 0.2]);
         const row = getCustomRow([name,description], [0.2, 0.8]);
         row.appendChild(document_createElement_vr());
         row.appendChild(demo);

@@ -1,4 +1,4 @@
-import {Point, Color, downloadJSON} from "/scripts/utils.js";
+import {Point, Color, downloadJSON, downloadBlob} from "/scripts/utils.js";
 import {Emitter} from "/scripts/fireworks.js";
 
 export class EmitterGroup{
@@ -113,6 +113,10 @@ export class Environment{
             const size = this.resize_function(this.pixels_scale);
             this.updateCanvasDims(size[0], size[1]);
         }
+        
+        this.name = "Fireworker show";
+        
+        this.soundtrack = new Audio();
     }
     
     writeText(content,pos,duration,font,color = new Color(1.,1.,1.), fade=[0.,0.]){
@@ -144,6 +148,11 @@ export class Environment{
         }
     }
     execute(){
+        if(this.soundtrack.duration > 0 && !this.soundtrack.paused){
+            this.soundtrack.pause();
+            this.soundtrack.currentTime=0;
+        }
+        this.soundtrack.play();
         for(const group of this.planned_groups){
             for(const emitter of group.emitters){
                 const copy = emitter.copy();
@@ -155,12 +164,14 @@ export class Environment{
     play(){
         if(!this.play_status){
             this.play_status = true;
+            this.soundtrack.play();
             this.step();
         }
         //this.canvas.addEventListener('mousedown', this.onclick);
     }
     pause(){
         this.play_status = false;
+        this.soundtrack.pause();
         //this.canvas.removeEventListener('mousedown', this.onclick);
     }
     
@@ -306,6 +317,87 @@ export class Environment{
             data.push(group.toJSON());
         }
         downloadJSON(data,fileName,"fsequence");
+    }
+    
+    async loadShow(file){
+        const reader = new zip.ZipReader(new zip.BlobReader(file));
+        const entries = await reader.getEntries();
+        const show_entry = entries.find(entry=>entry.filename==="show.json");
+        if(!show_entry){
+          reader.close();
+          alert("Broken show save, aborting file loading.");
+          return;
+        };
+        const show_json = await show_entry.getData(new zip.TextWriter(),{});
+        const show_data = JSON.parse(show_json);
+
+        // Sequence
+        const sequence_entry = entries.find(entry=>entry.filename===show_data?.sequence);
+        if(!sequence_entry){
+          reader.close();
+          alert("Broken show sequence, aborting file loading.");
+          return;
+        };
+        const sequence_json = await sequence_entry.getData(new zip.TextWriter(),{});
+        const sequence_data = JSON.parse(sequence_json);
+        this.loadSequence(sequence_data);
+
+        // Show name
+        this.name = show_data?.name ?? this.name;
+
+        // Soundtrack
+        const soundtrack_path = show_data?.soundtrack;
+        if(soundtrack_path){
+            const soundtrack_entry = entries.find(entry=>entry.filename===soundtrack_path);
+            if(soundtrack_entry){
+                const soundtrack = await soundtrack_entry.getData(new zip.BlobWriter("audio/mpeg"),{});
+                this.setSoundtrack(soundtrack);
+            }
+            else{
+              this.clearSoundtrack(soundtrack);
+            }
+        }
+        else{
+          this.clearSoundtrack(soundtrack);
+        }
+        reader.close();
+    }
+    
+    async exportShow(fileName){
+        const sequence_data=[];
+        for(const group of this.planned_groups){
+            sequence_data.push(group.toJSON());
+        }
+        const blobWriter = new zip.BlobWriter("application/zip");
+        const zipWriter = new zip.ZipWriter(blobWriter);
+
+        await zipWriter.add("sequence.fsequence", new zip.TextReader(JSON.stringify(sequence_data)));
+        const show_data = {name:this.name,sequence:"sequence.fsequence",soundtrack:null};
+        
+        if(this.soundtrack.blob){
+          zipWriter.add("resources/audio/soundtrack.mp3", new zip.BlobReader(this.soundtrack.blob));
+          show_data.soundtrack="resources/audio/soundtrack.mp3";
+        }
+        
+        await zipWriter.add("show.json", new zip.TextReader(JSON.stringify(show_data)));
+        await zipWriter.close();
+
+        // get the zip file as a Blob
+        const blob = await blobWriter.getData();
+        
+        downloadBlob(blob,fileName,"fshow");
+    }
+    
+    clearSoundtrack(){
+        this.soundtrack.pause();
+        this.soundtrack = new Audio();
+    }
+    
+    setSoundtrack(blob){
+        const url = URL.createObjectURL(blob);
+        this.soundtrack.pause();
+        this.soundtrack = new Audio(url);
+        this.soundtrack.blob = blob;
     }
 }
 

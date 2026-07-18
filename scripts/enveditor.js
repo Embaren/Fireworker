@@ -4,7 +4,6 @@ import {Template} from "/scripts/fireworks.js";
 import {EmitterGroup} from "/scripts/environment.js";
 import {getTooltip} from "/scripts/tooltips.js";
 
-
 const shape_to_char = {
     "circle": "○",
     "disk": "●",
@@ -262,7 +261,7 @@ class CoordEditor{
         }
         this.cursor.env.setOnclick();
         this.active=null;
-        this.on_deactivate();
+        if(this.on_deactivate) this.on_deactivate();
         this.on_deactivate = ()=>{};
     }
     
@@ -307,7 +306,7 @@ function updateColorFromInput(object,field){
                 object[field].fromHTML(input.value);
             }
         },
-        'alpha':  function(input){
+        'alpha': function(input){
             return function(e){
                 object[field].a = parseFloat(input.value)/255;
             }
@@ -323,7 +322,7 @@ function updateColorListFromInput(object,field){
                 object[field] = color.list();
             }
         },
-        'alpha':  function(input){
+        'alpha': function(input){
             return function(e){
                 object[field][3] = parseFloat(input.value)/255;
             }
@@ -495,7 +494,7 @@ function fillRow(row, attributes, edit_type, ids, onchange_functions, edit, id_s
     }
 }
 
-function getUploadButton(on_upload, button_text="", accept=undefined, multiple = false){
+function getUploadButton(on_upload, button_text="", accept=undefined, multiple=false, read=true){
     const loadFileButton = document.createElement("button");
     loadFileButton.addEventListener('click',function(){
         loadFileInput.click();
@@ -512,19 +511,27 @@ function getUploadButton(on_upload, button_text="", accept=undefined, multiple =
             loadFileInput.accept = accept;
         };
         loadFileInput.onchange = () => {
-          const reader = new FileReader();
-          var i = 0;
-          reader.onload = (e) => {
-              on_upload(e);
-              i = i+1;
-              if(i<loadFileInput.files.length){
-                reader.readAsText(loadFileInput.files[i])
-              }
-              else{
-                loadFileInput.replaceWith(getFileInput());
-              }
-          };
-          reader.readAsText(loadFileInput.files[i]);
+          if(read){
+            const reader = new FileReader();
+            var i = 0;
+            reader.onload = (e) => {
+                on_upload(e);
+                i = i+1;
+                if(i<loadFileInput.files.length){
+                  reader.readAsText(loadFileInput.files[i])
+                }
+                else{
+                  loadFileInput.replaceWith(getFileInput());
+                }
+            };
+            reader.readAsText(loadFileInput.files[i]);
+          }
+          else{
+            for(let i =0 ; i<loadFileInput.files.length ; i++){
+              on_upload(loadFileInput.files[i]);
+            }
+            loadFileInput.replaceWith(getFileInput());
+          }
         }
         return loadFileInput;
     }
@@ -614,22 +621,23 @@ class SequenceEditor{
         { // Import section
             const importSpan = document.createElement("span");
             
+            // Group
             const groupUploadButton = getUploadButton((e) => {
                 const group_data = JSON.parse(e.target.result);
                 this.env.loadGroup(group_data);
                 this.update();
               }, "Load group", ".fgroup", true);
+            importSpan.appendChild(groupUploadButton);
             
+            // Sequence
             const seqUploadButton = getUploadButton((e) => {
                 const sequence_data = JSON.parse(e.target.result);
                 this.env.loadSequence(sequence_data);
                 this.update();
               }, "Load sequence", ".fsequence", false);
+            importSpan.appendChild(seqUploadButton);
               
-              importSpan.appendChild(groupUploadButton);
-              importSpan.appendChild(seqUploadButton);
-              
-              {
+            {
                 const env = this.env;
                 const sequenceSaveButton = document.createElement("button");
                 sequenceSaveButton.addEventListener('click',function(){
@@ -638,7 +646,26 @@ class SequenceEditor{
                 const cell_text = document.createTextNode("Save sequence");
                 sequenceSaveButton.appendChild(cell_text);
                 importSpan.appendChild(sequenceSaveButton);
-              }
+            }
+              
+            // Show
+            const showUploadButton = getUploadButton(async (e) => {
+                await this.env.loadShow(e);
+                this.update();
+            }, "Load show", ".fshow", false, false);
+            importSpan.appendChild(showUploadButton);
+              
+            {
+                const env = this.env;
+                const showSaveButton = document.createElement("button");
+                showSaveButton.addEventListener('click',function(){
+                    const file_name = env.name.replace(/\s+/gi,'_').replace(/[^a-zA-Z0-9\-]/gi,'');
+                    env.exportShow(file_name===""?"show":file_name);
+                });
+                const cell_text = document.createTextNode("Save show");
+                showSaveButton.appendChild(cell_text);
+                importSpan.appendChild(showSaveButton);
+            }
               
             this.utilsDiv.appendChild(importSpan);
         }
@@ -742,18 +769,37 @@ class SequenceEditor{
     updatePlanDiv(){
         this.planDiv.innerHTML = "";
         const title = document.createElement('h3');
-        title.innerHTML = "Sequence";
-        const tooltip = document_createTooltip(document.createTextNode("A sequence is composed of multiple groups of emitters. It corresponds to the entire plan for you fireworks show."));
+        title.innerHTML = "Show";
+        const tooltip = document_createTooltip(document.createTextNode("A show is composed of multiple groups of emitters. It corresponds to the entire plan for you fireworks show."));
         title.appendChild(tooltip);
+        { // Name
+            const name_input = getInputElement("text",this.env.name,false,updateFieldFromInput(this.env, 'name', (x)=>{return x},()=>{}));
+            title.appendChild(name_input);
+        }
         { // Run sequence button
             const run_button = document.createElement("button");
-            run_button.onclick = ()=> {this.env.execute()};
-            run_button.appendChild(document.createTextNode("Play sequence"));
-            const tooltip = document_createTooltip(document.createTextNode("You can also play the sequence by pressing 'ENTER' on your keyboard."));
+            run_button.onclick = ()=> {this.env.execute();};
+            run_button.appendChild(document.createTextNode("Play show"));
+            const tooltip = document_createTooltip(document.createTextNode("You can also play the show by pressing 'ENTER' on your keyboard."));
             tooltip.addEventListener("mouseenter", (event) => {run_button.onclick = ()=>{};});
             tooltip.addEventListener("mouseleave", (event) => {run_button.onclick = ()=> {this.env.execute()};});
             run_button.appendChild(tooltip);
             title.appendChild(run_button);
+        }
+        { // Pause button
+            const pause_button = document.createElement("button");
+            pause_button.onclick = ()=> {pause_button.replaceWith(play_button);this.env.pause();};
+            pause_button.appendChild(document.createTextNode("⏸"));
+            const play_button = document.createElement("button");
+            play_button.onclick = ()=> {play_button.replaceWith(pause_button);this.env.play();};
+            play_button.appendChild(document.createTextNode("▶"));
+            title.appendChild(pause_button);
+        }
+        { // Upload soundtrack
+            const music_button = getUploadButton((e)=>{
+              this.env.setSoundtrack(e);
+            },"♫","audio/*",false,false)
+            title.appendChild(music_button);
         }
         this.planDiv.appendChild(title);
         

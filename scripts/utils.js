@@ -191,14 +191,24 @@ export function parseFormula(formula_string, variables){
     return pile[0];
 }
 
-export function downloadJSON(data, fileName, extension = ".json") {
-  const jsonData = JSON.stringify(data)
+export function downloadBlob(blob, filename, extension=null) {
   const a = document.createElement("a");
-  const file = new Blob([jsonData], {type: 'text/plain'});
-  a.href = URL.createObjectURL(file);
-  a.download = fileName+'.'+extension;
+  a.href = URL.createObjectURL(blob);
+  a.download = filename+(extension?'.'+extension:'');
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+export function downloadJSON(data, filename, extension = ".json") {
+  const jsonData = JSON.stringify(data)
+  const blob = new Blob([jsonData], {type: 'text/plain'});
+  downloadBlob(blob,filename,extension);
+}
+
+export async function downloadZIP(zip, filename, extension = ".zip") {
+  const blobWriter = new zip.BlobWriter("application/zip");
+  const blob = await blobWriter.getData();
+  downloadBlob(blob,filename,extension);
 }
 
 function componentToHex(c) {

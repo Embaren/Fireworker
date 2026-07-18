@@ -1,64 +1,64 @@
 <!DOCTYPE html>
-<!-- FIREWORKER v.1.0 -->
-<!-- Emile BARBIER--RENARD - 2024 -->
+<!-- FIREWORKER v.1.1 -->
+<!-- Emile BARBIER--RENARD - 2026 -->
 <!-- Contact : ebarbier@telecom-paris.fr -->
 <html lang="en">
 <head>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <title>FIREWORKER</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik+Scribble">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+Symbols+2">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Myeongjo">
-    <link rel="stylesheet" href="/style.css">
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<title>FIREWORKER</title>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik+Scribble">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+Symbols+2">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nanum+Myeongjo">
+	<link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
-    <h1>FIREWORKER v1.0</h1>
+	<h1>FIREWORKER v1.1</h1>
 	<div id="gameDiv">
 	</div>
-    <div id="controlDiv">
-    </div>
-    
+	<div id="controlDiv">
+	</div>
+	<script type="text/javascript" src="/library/ZipJS/zip.js"></script>
 	<script type="module">        
-        import {Point} from "/scripts/utils.js";
-        import {Environment} from "/scripts/environment.js";
-        import {EnvEditor} from "/scripts/enveditor.js";
+    import {Point} from "/scripts/utils.js";
+    import {Environment} from "/scripts/environment.js";
+    import {EnvEditor} from "/scripts/enveditor.js";
+    
+    // Canvas auto-resize
+    
+    function getSizeParameters(pixels_scale=1){         
+        const win_width = innerWidth;
+        const win_height = innerHeight;
         
-        // Canvas auto-resize
+        const width = Math.round((0.8*win_width)/pixels_scale);
+        const height = Math.round((0.8*win_height)/pixels_scale);
         
-        function getSizeParameters(pixels_scale=1){         
-            const win_width = innerWidth;
-            const win_height = innerHeight;
-            
-            const width = Math.round((0.8*win_width)/pixels_scale);
-            const height = Math.round((0.8*win_height)/pixels_scale);
-            
-            return [width, height];
-        }
-        
-        // Setting up environment
-        
-        //                               canvas ID, create new canvas?, framerate, dampen (over 1s),  gravity (over 1s), pixels_scale,  rescale function
-        const game_env = new Environment(   "game",               true,        12,              .45, new Point(2.,-20.),            2, getSizeParameters);
-        const gameDiv = document.getElementById("gameDiv");
-        gameDiv.appendChild(game_env.canvas_group);
-        
-        game_env.play();
-        
-        const editor = new EnvEditor(game_env, document.getElementById("controlDiv"));
-        
-        
-        document.addEventListener("keydown", (e) => {
-          /*
-          if(e.key==" "){
-            game_env.play_status ? game_env.pause() : game_env.play();
-          }
-          */
-          if(e.key=="Enter"){
-            game_env.execute();
-          }
-        });
+        return [width, height];
+    }
+    
+    // Setting up environment
+    
+    //                               canvas ID, create new canvas?, framerate, dampen (over 1s),  gravity (over 1s), pixels_scale,  rescale function
+    const game_env = new Environment(   "game",               true,        12,              .45, new Point(2.,-20.),            2, getSizeParameters);
+    const gameDiv = document.getElementById("gameDiv");
+    gameDiv.appendChild(game_env.canvas_group);
+    
+    game_env.play();
+    
+    const editor = new EnvEditor(game_env, document.getElementById("controlDiv"));
+    
+    
+    document.addEventListener("keydown", (e) => {
+      /*
+      if(e.key==" "){
+        game_env.play_status ? game_env.pause() : game_env.play();
+      }
+      */
+      if(e.key=="Enter"){
+        game_env.execute();
+  }
+    });
 	</script>
 </body>

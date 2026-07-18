@@ -25,8 +25,8 @@ const parametersDoc = {
         "name": "Fragment lifespan (s)",
         "description": "The fragments have a lifespan before decaying, corresponding to the duration of the firework.",
         "demo": {
-            "names":["Red fragments","White fragments"],
-            "sources":["Demo Bare", "Demo White"]
+            "names":["Short fragments","Long fragments"],
+            "sources":["Demo Bare", "Demo Long"]
         }
     },
     "head_color": {
@@ -147,7 +147,7 @@ export function getParameterDoc(key){
     if(key in parametersDoc){
         const parameterDoc = parametersDoc[key];
         const demo_div = document.createElement("div");
-        Demo.fromDTMKeys(demo_div,parameterDoc.demo.names,parameterDoc.demo.sources, dtm)
+        Demo.fromDTMKeys(demo_div,parameterDoc.demo.names,parameterDoc.demo.sources,dtm)
         return {
             "name":parameterDoc.name,
             "description":parameterDoc.description,
