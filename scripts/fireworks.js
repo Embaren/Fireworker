@@ -5,7 +5,7 @@ const BitType = {
   trail: 1,
 };
 
-const FireworkShapesReverse = ["circle", "disk", "star4", "star5", "heart","square","spiral1L","spiral2L","spiral3L","spiral4L","spiral1R","spiral2R","spiral3R","spiral4R"];
+const FireworkShapesReverse = ["circle", "disk", "star4", "star5", "heart","square","spiral1L","spiral2L","spiral3L","spiral4L","spiral1R","spiral2R","spiral3R","spiral4R","eye"];
 
 const FireworkShapes = {}
 for (let i=0 ; i<FireworkShapesReverse.length ; i++){
@@ -66,6 +66,9 @@ function getDistFun(shape_type = FireworkShapes.circle){
     case(FireworkShapes.heart):
         return (x)=>(Math.sin(Math.abs((x % (2*Math.PI))-Math.PI))/2+Math.sin(Math.abs((x % (2*Math.PI))-Math.PI)/2)*Math.pow(Math.abs((x % (2*Math.PI))-Math.PI)/Math.PI,6)+.5);
         //return (x)=>(Math.pow((Math.exp(-Math.pow(Math.abs((x % (2*Math.PI))-Math.PI)-Math.PI/3,2))+Math.exp(Math.pow(Math.abs((x % (2*Math.PI))-Math.PI)-Math.PI/12,2)/12))/2,1.2));
+        break;
+    case(FireworkShapes.eye):
+        return (x)=>(2./(Math.PI*Math.PI)*Math.pow(Math.abs(Math.abs(x)-Math.PI)-Math.PI/2.,2)+.5);
         break;
     case(FireworkShapes["spiral1L"]):
         return getSpiralDistFun(1,"L");
@@ -133,8 +136,8 @@ export class Firework {
     
     const phase = Math.random() * 2 * Math.PI;
     for(let j = 0 ; j < this.nb_bits ; j ++){
-      const angle = (j+(Math.random()-.5)/2.) * 2 * Math.PI / this.nb_bits + phase;
-      const angle_phase = angle + phase;
+      const angle = ((j+(Math.random()-.5)/2.) * 2 * Math.PI / this.nb_bits + phase)%(2.*Math.PI);
+      const angle_phase = (angle + phase)%(2.*Math.PI);
       const speed = projection_speed+(Math.random()-.5)*12.;
       const vel = this.initial_velocity.add(new Point(Math.cos(angle_phase),Math.sin(angle_phase)).scale(speed*distFun(angle)));
       const bit = new Bit(pos,vel,bit_color,1.,0.,BitType.main,true);
