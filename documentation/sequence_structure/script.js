@@ -32,7 +32,7 @@ mainDiv.appendChild(docDiv);
     }
     {
         const p = document.createElement("p");
-        const str = "You can load and save your sequence using the appropriate buttons. This way, you can share your creations with your friends, or see theirs. Don't forget to save your sequence before quitting the page!";
+        const str = "You can load and save your show and its sequence using the appropriate buttons. This way, you can share your creations with your friends, or see theirs. Don't forget to save your show before quitting the page!";
         const p_text = document.createTextNode(str);
         p.appendChild(p_text)
         docContentDiv.appendChild(p);
@@ -42,12 +42,12 @@ mainDiv.appendChild(docDiv);
 
 {
     const a = document.createElement("a");
-    a.href = "/resources/examples_sequence/DemoSequence.fsequence";
-    a.download = "DemoSequence.fsequence"
+    a.href = "/resources/examples_sequence/DemoShow.fshow";
+    a.download = "DemoShow.fshow"
     a.classList.add("content_div");
     a.classList.add("a_button");
     a.classList.add("documentation");
-    const a_text =  document.createTextNode("🡇 Download demo sequence file 🡇");
+    const a_text =  document.createTextNode("🡇 Download demo show file 🡇");
     a.appendChild(a_text);
     docDiv.appendChild(a);
 }
