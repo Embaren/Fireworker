@@ -628,7 +628,7 @@ class SequenceEditor{
                 this.update();
               }, "Load group", ".fgroup", true);
             importSpan.appendChild(groupUploadButton);
-            
+            /*
             // Sequence
             const seqUploadButton = getUploadButton((e) => {
                 const sequence_data = JSON.parse(e.target.result);
@@ -647,7 +647,7 @@ class SequenceEditor{
                 sequenceSaveButton.appendChild(cell_text);
                 importSpan.appendChild(sequenceSaveButton);
             }
-              
+            */
             // Show
             const showUploadButton = getUploadButton(async (e) => {
                 await this.env.loadShow(e);
