@@ -659,7 +659,7 @@ class SequenceEditor{
                 const env = this.env;
                 const showSaveButton = document.createElement("button");
                 showSaveButton.addEventListener('click',function(){
-                    const file_name = env.name.replace(/\s+/gi,'_').replace(/[^a-zA-Z0-9\-]/gi,'');
+                    const file_name = env.name.replace(/\s+/gi,'_').replace(/[^a-zA-Z0-9_\-]/gi,'');
                     env.exportShow(file_name===""?"show":file_name);
                 });
                 const cell_text = document.createTextNode("Save show");
